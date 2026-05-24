@@ -154,8 +154,7 @@ export default function App() {
 
   const sorted = [...filtered].sort((a, b) => b.score - a.score);
 
-  const toggleSave = (id) => setSavedCafes(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-
+  const toggleSave = (id: number) => setSavedCafes(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   const bg = darkMode
     ? { background: "#0c0b09", color: "#f0ece4" }
     : { background: "#f7f3ee", color: "#1a1510" };
