@@ -133,7 +133,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [darkMode, setDarkMode] = useState(true);
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const [savedCafes, setSavedCafes] = useState([]);
+  const [savedCafes, setSavedCafes] = useState<number[]>([]);
   const [showMap, setShowMap] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const heroRef = useRef(null);
