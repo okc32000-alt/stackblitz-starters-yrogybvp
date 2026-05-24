@@ -89,7 +89,7 @@ const cafes = [
 
 const filters = ["Sve", "kafa", "brunch", "desert", "date place", "work friendly", "nightlife", "shopping"];
 
-const ScoreRing = ({ score, size = 80 }) => {
+const ScoreRing = ({ score, size = 80 }: { score: number; size?: number }) => {
   const r = size / 2 - 6;
   const circ = 2 * Math.PI * r;
   const pct = (score / 10) * circ;
