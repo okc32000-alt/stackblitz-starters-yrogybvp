@@ -108,7 +108,7 @@ const ScoreRing = ({ score, size = 80 }: { score: number; size?: number }) => {
   );
 };
 
-const RatingBar = ({ label, value }) => (
+const RatingBar = ({ label, value }: { label: string; value: number }) => (
   <div style={{ marginBottom: "10px" }}>
     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
       <span style={{ fontSize: "12px", color: "#a09585", textTransform: "capitalize", letterSpacing: "0.5px" }}>{label}</span>
