@@ -17,7 +17,7 @@ type Cafe = {
   bestTime: string;
   image: string;
   gallery: string[];
-  ratings: { [key: string]: number };
+  ratings: { kafa: number; ambijent: number; usluga: number; cena: number; internet: number; muzika: number; };
 };
 
 type Comment = {
@@ -221,7 +221,7 @@ const AdminPanel = ({ cafes, setCafes, darkMode, onClose }: { cafes: Cafe[]; set
   };
 
   const handleEdit = (c: Cafe) => {
-    setForm({ name: c.name, address: c.address, score: c.score, hours: c.hours, instagram: c.instagram, description: c.description, mustTry: c.mustTry, bestTime: c.bestTime, priceRange: c.priceRange, image: c.image, gallery1: c.gallery[0] || "", gallery2: c.gallery[1] || "", gallery3: c.gallery[2] || "", category: c.category, tags: c.tags, ratings: c.ratings });
+    setForm({ name: c.name, address: c.address, score: c.score, hours: c.hours, instagram: c.instagram, description: c.description, mustTry: c.mustTry, bestTime: c.bestTime, priceRange: c.priceRange, image: c.image, gallery1: c.gallery[0] || "", gallery2: c.gallery[1] || "", gallery3: c.gallery[2] || "", category: c.category, tags: c.tags, ratings: c.ratings});
     setEditId(c.id);
     setTab("add");
   };
