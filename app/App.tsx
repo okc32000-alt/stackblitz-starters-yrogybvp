@@ -247,12 +247,31 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
             </div>
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Ocene po kategorijama</label>
-              {Object.keys(form.ratings).map(k => (
-                <div key={k} style={{ marginBottom: "10px" }}>
-                  <label style={{ ...lbl, textTransform: "capitalize" }}>{k}: <span style={{ color: "#d4a853" }}>{form.ratings[k]}</span></label>
-                  <input type="range" min="1" max="10" step="0.1" value={form.ratings[k]} onChange={e => setForm((f: any) => ({ ...f, ratings: { ...f.ratings, [k]: parseFloat(e.target.value) } }))} style={{ width: "100%", accentColor: "#d4a853" }}/>
-                </div>
-              ))}
+             {(Object.keys(form.ratings) as (keyof Ratings)[]).map(k => (
+  <div key={k} style={{ marginBottom: "10px" }}>
+    <label style={{ ...lbl, textTransform: "capitalize" }}>
+      {k}: <span style={{ color: "#d4a853" }}>{form.ratings[k]}</span>
+    </label>
+
+    <input
+      type="range"
+      min="1"
+      max="10"
+      step="0.1"
+      value={form.ratings[k]}
+      onChange={e =>
+        setForm((f: any) => ({
+          ...f,
+          ratings: {
+            ...f.ratings,
+            [k]: parseFloat(e.target.value)
+          }
+        }))
+      }
+      style={{ width: "100%", accentColor: "#d4a853" }}
+    />
+  </div>
+))}
             </div>
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "20px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Kategorije</label>
