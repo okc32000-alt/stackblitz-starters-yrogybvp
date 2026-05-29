@@ -183,12 +183,39 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
     await onRefresh();
   };
 
-  const Field = ({ label, field, type = "text", placeholder = "" }: { label: string; field: string; type?: string; placeholder?: string }) => (
+ const Field = ({
+  label,
+  field,
+  type = "text",
+  placeholder = ""
+}: {
+  label: string;
+  field: string;
+  type?: string;
+  placeholder?: string;
+}) => {
+  return (
     <div style={{ marginBottom: "14px" }}>
       <label style={lbl}>{label}</label>
-      <input type={type} placeholder={placeholder} value={(form as any)[field]} onChange={e => setForm((f: any) => ({ ...f, [field]: type === "number" ? parseFloat(e.target.value) : e.target.value }))} style={inp}/>
+
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={(form as any)[field]}
+        onChange={(e) =>
+          setForm((f: any) => ({
+            ...f,
+            [field]:
+              type === "number"
+                ? parseFloat(e.target.value) || 0
+                : e.target.value
+          }))
+        }
+        style={inp}
+      />
     </div>
   );
+};
 
   return (
     <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
