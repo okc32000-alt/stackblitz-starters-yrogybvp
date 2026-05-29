@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { useState, useEffect } from "react";
 
-// Definisemo tip Ratings sa tacno specificiranim kljucevima
+// Tip Ratings
 type Ratings = {
   kafa: number;
   ambijent: number;
@@ -12,7 +12,7 @@ type Ratings = {
   muzika: number;
 };
 
-// Tip Cafe sa ratings tipom
+// Tip Cafe
 type Cafe = {
   id: number;
   name: string;
@@ -42,7 +42,7 @@ const headers = {
   Authorization: "Bearer " + SUPABASE_KEY,
 };
 
-// Funkcije za rad sa bazom
+// Funkcije za bazu
 async function dbGet(table: string, params = "") {
   try {
     const res = await fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + params, { headers });
@@ -115,6 +115,28 @@ const emptyForm = {
   ratings: { ...defaultRatings },
 } as const;
 
+// Funkcija za konverziju
+function convertCafeToForm(c: Cafe): typeof emptyForm {
+  return {
+    name: c.name,
+    address: c.address,
+    score: c.score,
+    hours: c.hours,
+    instagram: c.instagram,
+    description: c.description,
+    must_try: c.must_try,
+    best_time: c.best_time,
+    price_range: c.price_range,
+    image: c.image,
+    gallery1: c.gallery[0] || "",
+    gallery2: c.gallery[1] || "",
+    gallery3: c.gallery[2] || "",
+    category: [...c.category],
+    tags: [...c.tags],
+    ratings: { ...c.ratings },
+  };
+}
+
 export default function App() {
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [form, setForm] = useState<typeof emptyForm>(emptyForm);
@@ -140,6 +162,13 @@ export default function App() {
     setComments(data);
   }
 
+  // Funkcija za izmenu
+  const handleEdit = (c: Cafe) => {
+    setForm(convertCafeToForm(c));
+    setEditId(c.id);
+    setTab("add");
+  };
+
   // Funkcija za unos ili izmenu
   const handleSave = async () => {
     if (editId !== null) {
@@ -155,13 +184,6 @@ export default function App() {
   const handleDelete = async (id: number) => {
     await dbDelete("cafes", id);
     await fetchCafes();
-  };
-
-  // Funkcija za izmenu
-  const handleEdit = (c: Cafe) => {
-    setForm({ ...c });
-    setEditId(c.id);
-    setTab("add");
   };
 
   // Funkcija za dodavanje komentara
@@ -241,6 +263,7 @@ export default function App() {
       {tab === "add" && (
         <div>
           <h2>{editId ? "Izmeni" : "Dodaj novi kafić"}</h2>
+          {/* Forma za unos */}
           <div>
             <label>Naziv: </label>
             <input
