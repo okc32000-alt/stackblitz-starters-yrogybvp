@@ -155,7 +155,7 @@ const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: 
               <p style={{ margin: "0 0 10px", fontSize: "11px", color: subtleText }}>{"🕐 " + c.hours}</p>
               <div style={{ display: "flex", gap: "6px" }}>
                 <button onClick={() => onSelect(c)} style={{ background: "linear-gradient(135deg, #d4a853, #b8893a)", border: "none", color: "#0c0b09", borderRadius: "99px", padding: "5px 14px", fontSize: "11px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Recenzija</button>
-                <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" style={{ background: cardBg, border: "1px solid " + borderCol, color: subtleText, borderRadius: "99px", padding: "5px 14px", fontSize: "11px", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Maps</a>
+                <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Čačak")} target="_blank" rel="noreferrer" style={{ background: cardBg, border: "1px solid " + borderCol, color: subtleText, borderRadius: "99px", padding: "5px 14px", fontSize: "11px", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Maps</a>
               </div>
             </div>
           </div>
@@ -527,7 +527,7 @@ export default function App() {
               <span style={{ fontSize: "22px" }}>📸</span><p style={{ margin: 0, fontSize: "13px", color: subtleText }}>Nema Instagram profila</p>
             </div>
           )}
-          <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textDecoration: "none", color: "inherit", marginBottom: "24px" }}>
+          <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Čačak")} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textDecoration: "none", color: "inherit", marginBottom: "24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span style={{ fontSize: "22px" }}>🗺️</span>
               <div><p style={{ margin: "0 0 2px", fontSize: "12px", color: subtleText }}>Lokacija</p><p style={{ margin: 0, fontSize: "14px", fontWeight: "600" }}>{c.address}</p></div>
@@ -568,7 +568,7 @@ export default function App() {
 
       <nav style={{ position: "fixed", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 100, backdropFilter: "blur(20px)", background: darkMode ? "rgba(12,11,9,0.8)" : "rgba(247,243,238,0.85)", border: "1px solid " + borderCol, borderRadius: "99px", padding: "10px 20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.3)", width: "calc(100% - 48px)", maxWidth: "560px", boxSizing: "border-box" }}>
         <span style={{ fontSize: "18px", cursor: "pointer", userSelect: "none" }} onDoubleClick={() => setAdminPrompt(true)}>☕</span>
-        <span style={{ flex: 1, fontWeight: "600", fontSize: "13px", letterSpacing: "-0.3px" }}>Ocenjivanje Kafica Cacak</span>
+        <span style={{ flex: 1, fontWeight: "600", fontSize: "13px", letterSpacing: "-0.3px" }}>Ocenjivanje Kafića Čačak</span>
         <button onClick={() => setShowMap(!showMap)} style={{ background: "none", border: "none", color: showMap ? "#d4a853" : subtleText, cursor: "pointer", fontSize: "18px" }}>📍</button>
         <button onClick={() => setDarkMode(!darkMode)} style={{ background: "none", border: "none", color: subtleText, cursor: "pointer", fontSize: "16px" }}>{darkMode ? "☀️" : "🌙"}</button>
         <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" style={{ background: "linear-gradient(135deg,#d4a853,#8a6a3a)", borderRadius: "99px", padding: "6px 14px", fontSize: "12px", color: "#fff", textDecoration: "none", fontWeight: "600" }}>IG</a>
@@ -580,25 +580,25 @@ export default function App() {
         <div style={{ position: "absolute", top: "15%", right: "10%", width: "200px", height: "200px", background: "radial-gradient(circle, rgba(212,168,83,0.15) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(30px)" }}/>
         <div style={{ position: "relative", padding: "0 24px", paddingTop: "100px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.3)", borderRadius: "99px", padding: "6px 14px", fontSize: "11px", color: "#d4a853", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "20px" }}>
-            Cacak Coffee Guide
+            Čačak Coffee Guide
           </div>
           <h1 style={{ fontSize: "clamp(36px,11vw,72px)", fontWeight: "400", lineHeight: 1.05, letterSpacing: "-2px", margin: "0 0 12px", maxWidth: "480px" }}>
             Najbolji<br/>
             <span style={{ background: "linear-gradient(135deg,#d4a853,#f0d090,#8a6a3a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>coffee guide</span><br/>
             u Cacku!
           </h1>
-          <p style={{ color: subtleText, fontSize: "15px", lineHeight: 1.6, margin: "0 0 24px", maxWidth: "340px" }}>Autenticne recenzije kafica, brunch mesta i lokacija koje vredi posetiti u Cacku.</p>
+          <p style={{ color: subtleText, fontSize: "15px", lineHeight: 1.6, margin: "0 0 24px", maxWidth: "340px" }}>Autenticne recenzije kafića, brunch mesta i lokacija koje vredi posetiti u Čačku.</p>
           <HeroCarousel cafes={cafes} darkMode={darkMode}/>
           <div style={{ position: "relative", marginBottom: "20px", maxWidth: "480px" }}>
             <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", color: subtleText }}>🔍</span>
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Trazi kafic..." style={{ width: "100%", padding: "16px 16px 16px 46px", background: darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "16px", color: "inherit", fontSize: "15px", outline: "none", backdropFilter: "blur(10px)", boxSizing: "border-box", fontFamily: "inherit" }}/>
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Traži kafić..." style={{ width: "100%", padding: "16px 16px 16px 46px", background: darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "16px", color: "inherit", fontSize: "15px", outline: "none", backdropFilter: "blur(10px)", boxSizing: "border-box", fontFamily: "inherit" }}/>
           </div>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <button onClick={() => document.getElementById("lokali")?.scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", border: "none", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Istraziti lokale</button>
+            <button onClick={() => document.getElementById("lokali")?.scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", border: "none", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Istražiti lokale</button>
             <button onClick={() => setShowMap(!showMap)} style={{ background: darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.05)", border: "1px solid " + (showMap?"#d4a853":borderCol), color: showMap?"#d4a853":"inherit", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", cursor: "pointer", fontFamily: "inherit" }}>Lokacije</button>
           </div>
           <div style={{ display: "flex", gap: "28px", marginTop: "40px" }}>
-            {[[String(cafes.length), "Lokala"], ["100+", "Recenzija"], ["4.8", "Rating"]].map(([n, l]) => (
+            {[[String(cafes.length), "Lokala"], ["100+", "Recenzija"], ["7.7", "Rating"]].map(([n, l]) => (
               <div key={l}><p style={{ margin: "0 0 2px", fontSize: "22px", fontWeight: "700", color: "#d4a853", letterSpacing: "-1px" }}>{n}</p><p style={{ margin: 0, fontSize: "11px", color: subtleText, letterSpacing: "1px", textTransform: "uppercase" }}>{l}</p></div>
             ))}
           </div>
@@ -700,15 +700,15 @@ export default function App() {
       <div style={{ margin: "0 24px 32px", padding: "28px 24px", background: "linear-gradient(135deg,rgba(212,168,83,0.15),rgba(138,105,58,0.08))", border: "1px solid rgba(212,168,83,0.25)", borderRadius: "24px", textAlign: "center" }}>
         <p style={{ margin: "0 0 8px", fontSize: "32px" }}>📸</p>
         <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: "400" }}>Prati nas na Instagramu</h3>
-        <p style={{ margin: "0 0 20px", color: subtleText, fontSize: "14px" }}>Svakodnevne recenzije i price iz kafica Cacka.</p>
+        <p style={{ margin: "0 0 20px", color: subtleText, fontSize: "14px" }}>Svakodnevne recenzije i priče iz kafića Čačka.</p>
         <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" style={{ display: "inline-block", background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", borderRadius: "14px", padding: "13px 28px", fontSize: "14px", fontWeight: "700", textDecoration: "none" }}>@ocenjivanje.kafica.cacak</a>
       </div>
 
       <footer style={{ padding: "24px", borderTop: "1px solid " + borderCol, textAlign: "center" }}>
         <p style={{ margin: "0 0 4px", fontSize: "18px" }}>☕</p>
-        <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: "600" }}>Ocenjivanje Kafica Cacak</p>
-        <p style={{ margin: 0, fontSize: "12px", color: subtleText }}>Autentican coffee guide za ljude koji cene kvalitet</p>
-        <p style={{ margin: "12px 0 0", fontSize: "11px", color: subtleText }}>2026 · Made with love in Cacak</p>
+        <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: "600" }}>Ocenjivanje Kafića Čačak</p>
+        <p style={{ margin: 0, fontSize: "12px", color: subtleText }}>Autentičan coffee guide za ljude koji cene kvalitet</p>
+        <p style={{ margin: "12px 0 0", fontSize: "11px", color: subtleText }}>2026 · Made with love in Čačak</p>
       </footer>
     </div>
   );
