@@ -27,42 +27,15 @@ async function dbDelete(table: string, id: number) {
   try { await fetch(SUPABASE_URL + "/rest/v1/" + table + "?id=eq." + id, { method: "DELETE", headers: hdrs }); } catch {}
 }
 
-type Ratings = {
-  kafa: number;
-  ambijent: number;
-  usluga: number;
-  cena: number;
-  internet: number;
-  muzika: number;
-};
-
 type Cafe = {
-  id: number;
-  name: string;
-  address: string;
-  score: number;
-  category: string[];
-  tags: string[];
-  price_range: string;
-  hours: string;
-  instagram: string;
-  description: string;
-  must_try: string;
-  best_time: string;
-  image: string;
-  gallery: string[];
-  ratings: Ratings;
+  id: number; name: string; address: string; score: number;
+  category: string[]; tags: string[]; price_range: string; hours: string;
+  instagram: string; description: string; must_try: string; best_time: string;
+  image: string; gallery: string[]; ratings: { [key: string]: number };
 };
 type Comment = { id: number; cafe_id: number; name: string; email: string; text: string; score: number; created_at: string; };
 
-const defaultRatings: Ratings = {
-  kafa: 7.0,
-  ambijent: 7.0,
-  usluga: 7.0,
-  cena: 7.0,
-  internet: 7.0,
-  muzika: 7.0
-};
+const defaultRatings = { kafa: 7.0, ambijent: 7.0, usluga: 7.0, cena: 7.0, internet: 7.0, muzika: 7.0 };
 const emptyForm = { name: "", address: "", score: 7.0, hours: "", instagram: "", description: "", must_try: "", best_time: "", price_range: "1-500 din", image: "", gallery1: "", gallery2: "", gallery3: "", category: ["kafa"] as string[], tags: ["cozy"] as string[], ratings: { ...defaultRatings } };
 const filters = ["Sve", "kafa", "brunch", "desert", "date place", "work friendly", "nightlife", "shopping"];
 
@@ -146,53 +119,6 @@ const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: 
   );
 };
 
-type FieldProps = {
-  label: string;
-  field: string;
-  type?: string;
-  placeholder?: string;
-  form: any;
-  setForm: any;
-  inp: React.CSSProperties;
-  lbl: React.CSSProperties;
-};
-
-const Field = ({
-  label,
-  field,
-  type = "text",
-  placeholder = "",
-  form,
-  setForm,
-  inp,
-  lbl
-}: FieldProps) => {
-  return (
-    <div style={{ marginBottom: "14px" }}>
-      <label style={lbl}>{label}</label>
-
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={form[field]}
-        onChange={(e) =>
-          setForm((f: any) => ({
-            ...f,
-            [field]:
-              type === "number"
-                ? parseFloat(e.target.value) || 0
-                : e.target.value
-          }))
-        }
-        style={inp}
-      />
-    </div>
-  );
-};
-
-
-
-
 const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; onClose: () => void; onRefresh: () => void; darkMode: boolean }) => {
   const [tab, setTab] = useState<"list" | "add">("list");
   const [form, setForm] = useState({ ...emptyForm });
@@ -229,6 +155,14 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
     await dbDelete("cafes", id);
     await onRefresh();
   };
+
+  const Field = ({ label, field, type = "text", placeholder = "" }: { label: string; field: string; type?: string; placeholder?: string }) => (
+    <div style={{ marginBottom: "14px" }}>
+      <label style={lbl}>{label}</label>
+      <input type={type} placeholder={placeholder} value={(form as any)[field]} onChange={e => setForm((f: any) => ({ ...f, [field]: type === "number" ? parseFloat(e.target.value) : e.target.value }))} style={inp}/>
+    </div>
+  );
+
   return (
     <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
       <div style={{ position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(20px)", background: darkMode ? "rgba(12,11,9,0.95)" : "rgba(247,243,238,0.95)", borderBottom: "1px solid " + borderCol, padding: "16px 24px", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -265,76 +199,33 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
         {tab === "add" && (
           <div>
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: "400" }}>{editId ? "Izmeni lokal" : "Novi lokal"}</h3>
-            type FieldProps = {
-  label: string;
-  field: string;
-  type?: string;
-  placeholder?: string;
-  form: any;
-  setForm: any;
-  inp: React.CSSProperties;
-  lbl: React.CSSProperties;
-};
-
-const Field = ({
-  label,
-  field,
-  type = "text",
-  placeholder = "",
-  form,
-  setForm,
-  inp,
-  lbl
-}: FieldProps) => {
-  return (
-    <div style={{ marginBottom: "14px" }}>
-      <label style={lbl}>{label}</label>
-
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={form[field]}
-        onChange={(e) =>
-          setForm((f: any) => ({
-            ...f,
-            [field]:
-              type === "number"
-                ? parseFloat(e.target.value) || 0
-                : e.target.value
-          }))
-        }
-        style={inp}
-      />
-    </div>
-  );
-};
+            <Field label="Naziv *" field="name" placeholder="npr. Kafic Sunce"/>
+            <Field label="Adresa *" field="address" placeholder="npr. Cara Dusana 12"/>
+            <Field label="Ukupna ocena (1-10) *" field="score" type="number" placeholder="7.5"/>
+            <Field label="Radno vreme" field="hours" placeholder="08:00 - 22:00"/>
+            <Field label="Instagram" field="instagram" placeholder="@naziv_kafea"/>
+            <Field label="Cenovni rang" field="price_range" placeholder="1-500 din"/>
+            <div style={{ marginBottom: "14px" }}>
+              <label style={lbl}>Opis</label>
+              <textarea value={form.description} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="Kratki opis lokala..." style={{ ...inp, minHeight: "80px", resize: "vertical" as const }}/>
+            </div>
+            <Field label="Sta probati" field="must_try" placeholder="npr. Cappuccino"/>
+            <Field label="Najbolje vreme" field="best_time" placeholder="npr. Jutro, 9-11h"/>
+            <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
+              <label style={{ ...lbl, color: "#d4a853" }}>Slike (URL)</label>
+              <Field label="Glavna slika *" field="image" placeholder="https://..."/>
+              <Field label="Galerija 1" field="gallery1" placeholder="https://..."/>
+              <Field label="Galerija 2" field="gallery2" placeholder="https://..."/>
+              <Field label="Galerija 3" field="gallery3" placeholder="https://..."/>
+            </div>
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Ocene po kategorijama</label>
-             {(Object.keys(form.ratings) as (keyof Ratings)[]).map(k => (
-  <div key={k} style={{ marginBottom: "10px" }}>
-    <label style={{ ...lbl, textTransform: "capitalize" }}>
-      {k}: <span style={{ color: "#d4a853" }}>{form.ratings[k]}</span>
-    </label>
-
-    <input
-      type="range"
-      min="1"
-      max="10"
-      step="0.1"
-      value={form.ratings[k]}
-      onChange={e =>
-        setForm((f: any) => ({
-          ...f,
-          ratings: {
-            ...f.ratings,
-            [k]: parseFloat(e.target.value)
-          }
-        }))
-      }
-      style={{ width: "100%", accentColor: "#d4a853" }}
-    />
-  </div>
-))}
+              {Object.keys(form.ratings).map(k => (
+                <div key={k} style={{ marginBottom: "10px" }}>
+                  <label style={{ ...lbl, textTransform: "capitalize" }}>{k}: <span style={{ color: "#d4a853" }}>{form.ratings[k]}</span></label>
+                  <input type="range" min="1" max="10" step="0.1" value={form.ratings[k]} onChange={e => setForm((f: any) => ({ ...f, ratings: { ...f.ratings, [k]: parseFloat(e.target.value) } }))} style={{ width: "100%", accentColor: "#d4a853" }}/>
+                </div>
+              ))}
             </div>
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "20px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Kategorije</label>
