@@ -27,18 +27,59 @@ async function dbDelete(table: string, id: number) {
   try { await fetch(SUPABASE_URL + "/rest/v1/" + table + "?id=eq." + id, { method: "DELETE", headers: hdrs }); } catch {}
 }
 
+type Ratings = { kafa: number; ambijent: number; usluga: number; cena: number; internet: number; muzika: number; };
+
 type Cafe = {
   id: number; name: string; address: string; score: number;
   category: string[]; tags: string[]; price_range: string; hours: string;
   instagram: string; description: string; must_try: string; best_time: string;
-  image: string; gallery: string[]; ratings: { [key: string]: number };
+  image: string; gallery: string[]; ratings: Ratings;
 };
+
 type Comment = { id: number; cafe_id: number; name: string; email: string; text: string; score: number; created_at: string; };
 
-const defaultRatings = { kafa: 7.0, ambijent: 7.0, usluga: 7.0, cena: 7.0, internet: 7.0, muzika: 7.0 };
-const emptyForm = { name: "", address: "", score: 7.0, hours: "", instagram: "", description: "", must_try: "", best_time: "", price_range: "1-500 din", image: "", gallery1: "", gallery2: "", gallery3: "", category: ["kafa"] as string[], tags: ["cozy"] as string[], ratings: { ...defaultRatings } };
-const filters = ["Sve", "kafa", "brunch", "desert", "date place", "work friendly", "nightlife", "shopping"];
+type FormState = {
+  name: string; address: string; score: number; hours: string; instagram: string;
+  description: string; must_try: string; best_time: string; price_range: string;
+  image: string; gallery1: string; gallery2: string; gallery3: string;
+  category: string[]; tags: string[]; ratings: Ratings;
+};
 
+const defaultRatings: Ratings = { kafa: 7.0, ambijent: 7.0, usluga: 7.0, cena: 7.0, internet: 7.0, muzika: 7.0 };
+
+const emptyForm: FormState = {
+  name: "", address: "", score: 7.0, hours: "", instagram: "", description: "",
+  must_try: "", best_time: "", price_range: "1-500 din", image: "",
+  gallery1: "", gallery2: "", gallery3: "",
+  category: ["kafa"], tags: ["cozy"],
+  ratings: { ...defaultRatings }
+};
+
+const filters = ["Sve", "kafa", "brunch", "desert", "date place", "work friendly", "nightlife", "shopping"];
+const ALL_CATS = ["kafa","brunch","desert","date place","work friendly","nightlife","shopping"];
+const ALL_TAGS = ["cozy","minimal","luxury","aesthetic","study spot","chill","sport","neighborhood","classic","quick stop"];
+
+// ── ADMIN FIELD (outside AdminPanel to prevent remount on keystroke) ──
+const AdminField = ({
+  label, field, value, onChange, type = "text", placeholder = "", darkMode, borderCol
+}: {
+  label: string; field: string; value: string | number;
+  onChange: (f: string, v: string | number) => void;
+  type?: string; placeholder?: string; darkMode: boolean; borderCol: string;
+}) => (
+  <div style={{ marginBottom: "14px" }}>
+    <label style={{ fontSize: "11px", color: darkMode ? "#6b6055" : "#9a8878", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>{label}</label>
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={e => onChange(field, type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
+      style={{ width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
+    />
+  </div>
+);
+
+// ── SCORE RING ────────────────────────────────────────────────────
 const ScoreRing = ({ score, size = 80 }: { score: number; size?: number }) => {
   const r = size / 2 - 6; const circ = 2 * Math.PI * r; const pct = (score / 10) * circ;
   const color = score >= 8.5 ? "#d4a853" : score >= 7 ? "#c8b89a" : "#8a7968";
@@ -50,6 +91,7 @@ const ScoreRing = ({ score, size = 80 }: { score: number; size?: number }) => {
   );
 };
 
+// ── RATING BAR ────────────────────────────────────────────────────
 const RatingBar = ({ label, value }: { label: string; value: number }) => (
   <div style={{ marginBottom: "10px" }}>
     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
@@ -62,6 +104,7 @@ const RatingBar = ({ label, value }: { label: string; value: number }) => (
   </div>
 );
 
+// ── HERO CAROUSEL ─────────────────────────────────────────────────
 const HeroCarousel = ({ cafes, darkMode }: { cafes: Cafe[]; darkMode: boolean }) => {
   const [idx, setIdx] = useState(0);
   const images = cafes.slice(0, 4).map(c => ({ img: c.image, name: c.name, score: c.score }));
@@ -77,16 +120,19 @@ const HeroCarousel = ({ cafes, darkMode }: { cafes: Cafe[]; darkMode: boolean })
         <div key={i} onClick={() => setIdx(i)} style={{ flexShrink: 0, width: i === idx ? "140px" : "56px", height: "80px", borderRadius: "14px", overflow: "hidden", cursor: "pointer", position: "relative", transition: "width 0.5s cubic-bezier(.4,0,.2,1)", border: i === idx ? "1.5px solid rgba(212,168,83,0.6)" : "1.5px solid transparent" }}>
           <img src={item.img} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }}/>
           <div style={{ position: "absolute", inset: 0, background: i === idx ? "linear-gradient(to top, rgba(12,11,9,0.7) 0%, transparent 60%)" : "rgba(12,11,9,0.4)" }}/>
-          {i === idx && <div style={{ position: "absolute", bottom: "6px", left: "8px", right: "8px" }}>
-            <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
-            <p style={{ margin: 0, fontSize: "9px", color: "#d4a853" }}>{item.score}/10</p>
-          </div>}
+          {i === idx && (
+            <div style={{ position: "absolute", bottom: "6px", left: "8px", right: "8px" }}>
+              <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
+              <p style={{ margin: 0, fontSize: "9px", color: "#d4a853" }}>{item.score}/10</p>
+            </div>
+          )}
         </div>
       ))}
     </div>
   );
 };
 
+// ── LOCATION LIST ─────────────────────────────────────────────────
 const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: (c: Cafe) => void; darkMode: boolean }) => {
   const cardBg = darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
   const borderCol = darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
@@ -119,9 +165,10 @@ const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: 
   );
 };
 
+// ── ADMIN PANEL ───────────────────────────────────────────────────
 const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; onClose: () => void; onRefresh: () => void; darkMode: boolean }) => {
   const [tab, setTab] = useState<"list" | "add">("list");
-  const [form, setForm] = useState({ ...emptyForm });
+  const [form, setForm] = useState<FormState>({ ...emptyForm, ratings: { ...defaultRatings } });
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -130,23 +177,47 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
   const cardBg = darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
   const borderCol = darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
   const subtleText = darkMode ? "#6b6055" : "#9a8878";
-  const inp: React.CSSProperties = { width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
   const lbl: React.CSSProperties = { fontSize: "11px", color: subtleText, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: "6px", display: "block" };
+  const inp: React.CSSProperties = { width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+
+  const setField = (field: string, val: string | number) => setForm(f => ({ ...f, [field]: val }));
 
   const handleSave = async () => {
     if (!form.name || !form.address || !form.image) { alert("Popuni naziv, adresu i sliku!"); return; }
     setSaving(true);
     const gallery = [form.gallery1, form.gallery2, form.gallery3].filter(Boolean);
-    const payload = { name: form.name, address: form.address, score: form.score, hours: form.hours, instagram: form.instagram, description: form.description, must_try: form.must_try, best_time: form.best_time, price_range: form.price_range, image: form.image, gallery: gallery.length ? gallery : [form.image], category: form.category, tags: form.tags, ratings: form.ratings };
+    const payload = {
+      name: form.name, address: form.address, score: form.score, hours: form.hours,
+      instagram: form.instagram, description: form.description, must_try: form.must_try,
+      best_time: form.best_time, price_range: form.price_range, image: form.image,
+      gallery: gallery.length ? gallery : [form.image],
+      category: form.category, tags: form.tags, ratings: form.ratings
+    };
     if (editId !== null) { await dbUpdate("cafes", editId, payload); }
     else { await dbInsert("cafes", payload); }
     await onRefresh();
     setSaving(false); setSaved(true);
-    setTimeout(() => { setSaved(false); setTab("list"); setForm({ ...emptyForm }); setEditId(null); }, 1200);
+    setTimeout(() => { setSaved(false); setTab("list"); setForm({ ...emptyForm, ratings: { ...defaultRatings } }); setEditId(null); }, 1200);
   };
 
   const handleEdit = (c: Cafe) => {
-    setForm({ name: c.name, address: c.address, score: c.score, hours: c.hours, instagram: c.instagram, description: c.description, must_try: c.must_try, best_time: c.best_time, price_range: c.price_range, image: c.image, gallery1: c.gallery[0] || "", gallery2: c.gallery[1] || "", gallery3: c.gallery[2] || "", category: c.category, tags: c.tags, ratings: c.ratings || { ...defaultRatings } });
+    const r = c.ratings && typeof c.ratings === "object" ? c.ratings : {};
+    const safeRatings: Ratings = {
+      kafa: (r as any).kafa ?? 7.0,
+      ambijent: (r as any).ambijent ?? 7.0,
+      usluga: (r as any).usluga ?? 7.0,
+      cena: (r as any).cena ?? 7.0,
+      internet: (r as any).internet ?? 7.0,
+      muzika: (r as any).muzika ?? 7.0,
+    };
+    setForm({
+      name: c.name, address: c.address, score: c.score, hours: c.hours,
+      instagram: c.instagram, description: c.description, must_try: c.must_try,
+      best_time: c.best_time, price_range: c.price_range, image: c.image,
+      gallery1: c.gallery[0] || "", gallery2: c.gallery[1] || "", gallery3: c.gallery[2] || "",
+      category: c.category || ["kafa"], tags: c.tags || ["cozy"],
+      ratings: safeRatings
+    });
     setEditId(c.id); setTab("add");
   };
 
@@ -156,12 +227,9 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
     await onRefresh();
   };
 
-  const Field = ({ label, field, type = "text", placeholder = "" }: { label: string; field: string; type?: string; placeholder?: string }) => (
-    <div style={{ marginBottom: "14px" }}>
-      <label style={lbl}>{label}</label>
-      <input type={type} placeholder={placeholder} value={(form as any)[field]} onChange={e => setForm((f: any) => ({ ...f, [field]: type === "number" ? parseFloat(e.target.value) : e.target.value }))} style={inp}/>
-    </div>
-  );
+  const toggleCat = (cat: string) => setForm(f => ({ ...f, category: f.category.includes(cat) ? f.category.filter(x => x !== cat) : [...f.category, cat] }));
+  const toggleTag = (tag: string) => setForm(f => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter(x => x !== tag) : [...f.tags, tag] }));
+  const setRating = (key: string, val: number) => setForm(f => ({ ...f, ratings: { ...f.ratings, [key]: val } }));
 
   return (
     <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
@@ -170,12 +238,13 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
         <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600", flex: 1 }}>Admin Panel</h2>
         <div style={{ display: "flex", gap: "8px" }}>
           {(["list", "add"] as const).map(t => (
-            <button key={t} onClick={() => { setTab(t); if (t === "add") { setForm({ ...emptyForm }); setEditId(null); } }} style={{ padding: "7px 16px", background: tab === t ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (tab === t ? "transparent" : borderCol), color: tab === t ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", fontWeight: tab === t ? "700" : "400" }}>
+            <button key={t} onClick={() => { setTab(t); if (t === "add") { setForm({ ...emptyForm, ratings: { ...defaultRatings } }); setEditId(null); } }} style={{ padding: "7px 16px", background: tab === t ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (tab === t ? "transparent" : borderCol), color: tab === t ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", fontWeight: tab === t ? "700" : "400" }}>
               {t === "list" ? "Lokali" : "Dodaj"}
             </button>
           ))}
         </div>
       </div>
+
       <div style={{ padding: "24px", maxWidth: "600px", margin: "0 auto" }}>
         {tab === "list" && (
           <div>
@@ -196,51 +265,56 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
             </div>
           </div>
         )}
+
         {tab === "add" && (
           <div>
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: "400" }}>{editId ? "Izmeni lokal" : "Novi lokal"}</h3>
-            <Field label="Naziv *" field="name" placeholder="npr. Kafic Sunce"/>
-            <Field label="Adresa *" field="address" placeholder="npr. Cara Dusana 12"/>
-            <Field label="Ukupna ocena (1-10) *" field="score" type="number" placeholder="7.5"/>
-            <Field label="Radno vreme" field="hours" placeholder="08:00 - 22:00"/>
-            <Field label="Instagram" field="instagram" placeholder="@naziv_kafea"/>
-            <Field label="Cenovni rang" field="price_range" placeholder="1-500 din"/>
+            <AdminField label="Naziv *" field="name" value={form.name} onChange={setField} placeholder="npr. Kafic Sunce" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Adresa *" field="address" value={form.address} onChange={setField} placeholder="npr. Cara Dusana 12" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Ukupna ocena (1-10) *" field="score" value={form.score} onChange={setField} type="number" placeholder="7.5" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Radno vreme" field="hours" value={form.hours} onChange={setField} placeholder="08:00 - 22:00" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Instagram" field="instagram" value={form.instagram} onChange={setField} placeholder="@naziv_kafea" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Cenovni rang" field="price_range" value={form.price_range} onChange={setField} placeholder="1-500 din" darkMode={darkMode} borderCol={borderCol}/>
             <div style={{ marginBottom: "14px" }}>
               <label style={lbl}>Opis</label>
-              <textarea value={form.description} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="Kratki opis lokala..." style={{ ...inp, minHeight: "80px", resize: "vertical" as const }}/>
+              <textarea value={form.description} onChange={e => setField("description", e.target.value)} placeholder="Kratki opis lokala..." style={{ ...inp, minHeight: "80px", resize: "vertical" as const }}/>
             </div>
-            <Field label="Sta probati" field="must_try" placeholder="npr. Cappuccino"/>
-            <Field label="Najbolje vreme" field="best_time" placeholder="npr. Jutro, 9-11h"/>
+            <AdminField label="Sta probati" field="must_try" value={form.must_try} onChange={setField} placeholder="npr. Cappuccino" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Najbolje vreme" field="best_time" value={form.best_time} onChange={setField} placeholder="npr. Jutro, 9-11h" darkMode={darkMode} borderCol={borderCol}/>
+
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Slike (URL)</label>
-              <Field label="Glavna slika *" field="image" placeholder="https://..."/>
-              <Field label="Galerija 1" field="gallery1" placeholder="https://..."/>
-              <Field label="Galerija 2" field="gallery2" placeholder="https://..."/>
-              <Field label="Galerija 3" field="gallery3" placeholder="https://..."/>
+              <AdminField label="Glavna slika *" field="image" value={form.image} onChange={setField} placeholder="https://..." darkMode={darkMode} borderCol={borderCol}/>
+              <AdminField label="Galerija 1" field="gallery1" value={form.gallery1} onChange={setField} placeholder="https://..." darkMode={darkMode} borderCol={borderCol}/>
+              <AdminField label="Galerija 2" field="gallery2" value={form.gallery2} onChange={setField} placeholder="https://..." darkMode={darkMode} borderCol={borderCol}/>
+              <AdminField label="Galerija 3" field="gallery3" value={form.gallery3} onChange={setField} placeholder="https://..." darkMode={darkMode} borderCol={borderCol}/>
             </div>
+
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Ocene po kategorijama</label>
-              {Object.keys(form.ratings).map(k => (
+              {(Object.keys(defaultRatings) as Array<keyof Ratings>).map(k => (
                 <div key={k} style={{ marginBottom: "10px" }}>
                   <label style={{ ...lbl, textTransform: "capitalize" }}>{k}: <span style={{ color: "#d4a853" }}>{form.ratings[k]}</span></label>
-                  <input type="range" min="1" max="10" step="0.1" value={form.ratings[k]} onChange={e => setForm((f: any) => ({ ...f, ratings: { ...f.ratings, [k]: parseFloat(e.target.value) } }))} style={{ width: "100%", accentColor: "#d4a853" }}/>
+                  <input type="range" min="1" max="10" step="0.1" value={form.ratings[k]} onChange={e => setRating(k, parseFloat(e.target.value))} style={{ width: "100%", accentColor: "#d4a853" }}/>
                 </div>
               ))}
             </div>
+
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "20px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Kategorije</label>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "12px" }}>
-                {["kafa","brunch","desert","date place","work friendly","nightlife","shopping"].map(cat => (
-                  <button key={cat} onClick={() => setForm((f: any) => ({ ...f, category: f.category.includes(cat) ? f.category.filter((x: string) => x !== cat) : [...f.category, cat] }))} style={{ padding: "6px 12px", background: form.category.includes(cat) ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (form.category.includes(cat) ? "transparent" : borderCol), color: form.category.includes(cat) ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{cat}</button>
+                {ALL_CATS.map(cat => (
+                  <button key={cat} onClick={() => toggleCat(cat)} style={{ padding: "6px 12px", background: form.category.includes(cat) ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (form.category.includes(cat) ? "transparent" : borderCol), color: form.category.includes(cat) ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{cat}</button>
                 ))}
               </div>
               <label style={{ ...lbl, color: "#d4a853" }}>Tagovi</label>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                {["cozy","minimal","luxury","aesthetic","study spot","chill","sport","neighborhood","classic","quick stop"].map(tag => (
-                  <button key={tag} onClick={() => setForm((f: any) => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter((x: string) => x !== tag) : [...f.tags, tag] }))} style={{ padding: "6px 12px", background: form.tags.includes(tag) ? "rgba(212,168,83,0.2)" : cardBg, border: "1px solid " + (form.tags.includes(tag) ? "rgba(212,168,83,0.5)" : borderCol), color: form.tags.includes(tag) ? "#d4a853" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{tag}</button>
+                {ALL_TAGS.map(tag => (
+                  <button key={tag} onClick={() => toggleTag(tag)} style={{ padding: "6px 12px", background: form.tags.includes(tag) ? "rgba(212,168,83,0.2)" : cardBg, border: "1px solid " + (form.tags.includes(tag) ? "rgba(212,168,83,0.5)" : borderCol), color: form.tags.includes(tag) ? "#d4a853" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{tag}</button>
                 ))}
               </div>
             </div>
+
             <button onClick={handleSave} disabled={saving} style={{ width: "100%", padding: "16px", background: saved ? "linear-gradient(135deg,#4caf50,#2e7d32)" : "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "14px", fontSize: "16px", fontWeight: "700", cursor: saving ? "wait" : "pointer", fontFamily: "inherit" }}>
               {saving ? "Cuvam..." : saved ? "Sacuvano!" : editId ? "Sacuvaj izmene" : "Dodaj lokal"}
             </button>
@@ -251,6 +325,7 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
   );
 };
 
+// ── COMMENTS ─────────────────────────────────────────────────────
 const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boolean }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [form, setForm] = useState({ name: "", email: "", text: "", score: 8 });
@@ -294,7 +369,7 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
         </div>
         <textarea placeholder="Tvoj komentar..." value={form.text} onChange={e => setForm(f => ({ ...f, text: e.target.value }))} style={{ ...inp, minHeight: "70px", resize: "vertical" as const, marginBottom: "10px" }}/>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-          <span style={{ fontSize: "12px", color: darkMode ? "#6b6055" : "#9a8878", flexShrink: 0 }}>Ocena:</span>
+          <span style={{ fontSize: "12px", color: subtleText, flexShrink: 0 }}>Ocena:</span>
           <input type="range" min="1" max="10" step="0.5" value={form.score} onChange={e => setForm(f => ({ ...f, score: parseFloat(e.target.value) }))} style={{ flex: 1, accentColor: "#d4a853" }}/>
           <span style={{ color: "#d4a853", fontWeight: "700", minWidth: "40px", fontSize: "14px" }}>{form.score}/10</span>
         </div>
@@ -304,10 +379,10 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
         </button>
       </div>
       {loading ? (
-        <div style={{ padding: "20px", textAlign: "center", color: darkMode ? "#6b6055" : "#9a8878", fontSize: "13px" }}>Ucitavam...</div>
+        <div style={{ padding: "20px", textAlign: "center", color: subtleText, fontSize: "13px" }}>Ucitavam...</div>
       ) : comments.length === 0 ? (
         <div style={{ padding: "24px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textAlign: "center" }}>
-          <p style={{ margin: 0, color: darkMode ? "#6b6055" : "#9a8878", fontSize: "13px" }}>Nema komentara. Budi prvi!</p>
+          <p style={{ margin: 0, color: subtleText, fontSize: "13px" }}>Nema komentara. Budi prvi!</p>
         </div>
       ) : (
         <div style={{ display: "grid", gap: "10px" }}>
@@ -316,7 +391,7 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                 <div>
                   <p style={{ margin: "0 0 2px", fontWeight: "700", fontSize: "14px" }}>{comment.name}</p>
-                  <p style={{ margin: 0, fontSize: "11px", color: darkMode ? "#6b6055" : "#9a8878" }}>{new Date(comment.created_at).toLocaleDateString("sr-RS")}</p>
+                  <p style={{ margin: 0, fontSize: "11px", color: subtleText }}>{new Date(comment.created_at).toLocaleDateString("sr-RS")}</p>
                 </div>
                 <span style={{ background: "rgba(212,168,83,0.15)", border: "1px solid rgba(212,168,83,0.3)", color: "#d4a853", borderRadius: "99px", padding: "3px 10px", fontSize: "12px", fontWeight: "700", alignSelf: "flex-start" }}>{comment.score}/10</span>
               </div>
@@ -329,6 +404,7 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
   );
 };
 
+// ── MAIN APP ──────────────────────────────────────────────────────
 export default function App() {
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -376,8 +452,17 @@ export default function App() {
 
   if (adminMode) return <AdminPanel cafes={cafes} onClose={() => { setAdminMode(false); loadCafes(); }} onRefresh={loadCafes} darkMode={darkMode}/>;
 
+  // ── DETAIL PAGE ──────────────────────────────────────────────
   if (page === "detail" && selectedCafe) {
     const c = selectedCafe;
+    const safeRatings: Ratings = {
+      kafa: (c.ratings as any)?.kafa ?? 0,
+      ambijent: (c.ratings as any)?.ambijent ?? 0,
+      usluga: (c.ratings as any)?.usluga ?? 0,
+      cena: (c.ratings as any)?.cena ?? 0,
+      internet: (c.ratings as any)?.internet ?? 0,
+      muzika: (c.ratings as any)?.muzika ?? 0,
+    };
     return (
       <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
         <div style={{ position: "relative", height: "55vh", overflow: "hidden" }}>
@@ -413,10 +498,10 @@ export default function App() {
               <span style={{ fontSize: "12px", color: subtleText }}>{c.price_range + " · " + c.hours}</span>
             </div>
           </div>
-          {c.ratings && Object.keys(c.ratings).length > 0 && (
+          {c.ratings && (
             <div style={{ padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol, marginBottom: "20px" }}>
               <h3 style={{ margin: "0 0 16px", fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText }}>Ocene po kategorijama</h3>
-              {Object.entries(c.ratings).map(([k, v]) => <RatingBar key={k} label={k} value={v as number}/>)}
+              {(Object.keys(safeRatings) as Array<keyof Ratings>).map(k => <RatingBar key={k} label={k} value={safeRatings[k]}/>)}
             </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
@@ -464,6 +549,7 @@ export default function App() {
     );
   }
 
+  // ── HOME PAGE ─────────────────────────────────────────────────
   return (
     <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       {adminPrompt && (
@@ -479,6 +565,7 @@ export default function App() {
           </div>
         </div>
       )}
+
       <nav style={{ position: "fixed", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 100, backdropFilter: "blur(20px)", background: darkMode ? "rgba(12,11,9,0.8)" : "rgba(247,243,238,0.85)", border: "1px solid " + borderCol, borderRadius: "99px", padding: "10px 20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.3)", width: "calc(100% - 48px)", maxWidth: "560px", boxSizing: "border-box" }}>
         <span style={{ fontSize: "18px", cursor: "pointer", userSelect: "none" }} onDoubleClick={() => setAdminPrompt(true)}>☕</span>
         <span style={{ flex: 1, fontWeight: "600", fontSize: "13px", letterSpacing: "-0.3px" }}>Ocenjivanje Kafica Cacak</span>
@@ -486,6 +573,7 @@ export default function App() {
         <button onClick={() => setDarkMode(!darkMode)} style={{ background: "none", border: "none", color: subtleText, cursor: "pointer", fontSize: "16px" }}>{darkMode ? "☀️" : "🌙"}</button>
         <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" style={{ background: "linear-gradient(135deg,#d4a853,#8a6a3a)", borderRadius: "99px", padding: "6px 14px", fontSize: "12px", color: "#fff", textDecoration: "none", fontWeight: "600" }}>IG</a>
       </nav>
+
       <div style={{ position: "relative", minHeight: "100svh", display: "flex", flexDirection: "column", justifyContent: "flex-end", paddingBottom: "60px", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: darkMode ? "radial-gradient(ellipse at 70% 20%, rgba(138,105,58,0.25) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(212,168,83,0.12) 0%, transparent 50%), #0c0b09" : "radial-gradient(ellipse at 70% 20%, rgba(212,168,83,0.3) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(138,105,58,0.15) 0%, transparent 50%), #f7f3ee" }}/>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(" + (darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)") + " 1px,transparent 1px),linear-gradient(90deg," + (darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)") + " 1px,transparent 1px)", backgroundSize: "40px 40px" }}/>
@@ -516,6 +604,7 @@ export default function App() {
           </div>
         </div>
       </div>
+
       {showMap && (
         <div style={{ padding: "0 24px 32px" }}>
           <div style={{ marginBottom: "16px" }}>
@@ -525,6 +614,7 @@ export default function App() {
           <LocationList cafes={cafes} onSelect={c => { setSelectedCafe(c); setPage("detail"); setShowMap(false); }} darkMode={darkMode}/>
         </div>
       )}
+
       <div style={{ position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(20px)", background: darkMode?"rgba(12,11,9,0.9)":"rgba(247,243,238,0.9)", borderBottom: "1px solid " + borderCol, padding: "0 24px" }}>
         <div style={{ display: "flex", gap: "8px", overflowX: "auto", padding: "14px 0", scrollbarWidth: "none" }}>
           {filters.map(f => (
@@ -532,13 +622,15 @@ export default function App() {
           ))}
         </div>
       </div>
+
       {sorted.length > 0 && (
         <div style={{ margin: "32px 24px 0", padding: "20px", background: "linear-gradient(135deg,rgba(212,168,83,0.12),rgba(138,105,58,0.06))", border: "1px solid rgba(212,168,83,0.2)", borderRadius: "20px" }}>
           <p style={{ margin: "0 0 4px", fontSize: "11px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase" }}>Ovog meseca</p>
-          <p style={{ margin: "0 0 12px", fontSize: "18px", fontWeight: "600" }}>Top ocenjeni: <span style={{ color: "#d4a853" }}>{sorted[0]?.name + " " + sorted[0]?.score + "/10"}</span></p>
+          <p style={{ margin: "0 0 12px", fontSize: "18px", fontWeight: "600" }}>Top ocenjeni: <span style={{ color: "#d4a853" }}>{sorted[0].name + " " + sorted[0].score + "/10"}</span></p>
           <button onClick={() => { setSelectedCafe(sorted[0]); setPage("detail"); }} style={{ background: "rgba(212,168,83,0.15)", border: "1px solid rgba(212,168,83,0.3)", color: "#d4a853", borderRadius: "99px", padding: "7px 16px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>Pogledaj recenziju</button>
         </div>
       )}
+
       <div id="lokali" style={{ padding: "32px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "20px" }}>
           <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "400", letterSpacing: "-0.5px" }}>Svi lokali</h2>
@@ -585,6 +677,7 @@ export default function App() {
           </div>
         )}
       </div>
+
       {cafes.filter(c => c.score >= 8).length > 0 && (
         <div style={{ margin: "0 24px 32px", padding: "24px", background: darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)", border: "1px solid " + borderCol, borderRadius: "24px" }}>
           <p style={{ margin: "0 0 4px", fontSize: "11px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase" }}>Hidden gems</p>
@@ -603,12 +696,14 @@ export default function App() {
           </div>
         </div>
       )}
+
       <div style={{ margin: "0 24px 32px", padding: "28px 24px", background: "linear-gradient(135deg,rgba(212,168,83,0.15),rgba(138,105,58,0.08))", border: "1px solid rgba(212,168,83,0.25)", borderRadius: "24px", textAlign: "center" }}>
         <p style={{ margin: "0 0 8px", fontSize: "32px" }}>📸</p>
         <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: "400" }}>Prati nas na Instagramu</h3>
         <p style={{ margin: "0 0 20px", color: subtleText, fontSize: "14px" }}>Svakodnevne recenzije i price iz kafica Cacka.</p>
         <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" style={{ display: "inline-block", background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", borderRadius: "14px", padding: "13px 28px", fontSize: "14px", fontWeight: "700", textDecoration: "none" }}>@ocenjivanje.kafica.cacak</a>
       </div>
+
       <footer style={{ padding: "24px", borderTop: "1px solid " + borderCol, textAlign: "center" }}>
         <p style={{ margin: "0 0 4px", fontSize: "18px" }}>☕</p>
         <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: "600" }}>Ocenjivanje Kafica Cacak</p>
