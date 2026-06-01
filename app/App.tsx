@@ -1,6 +1,6 @@
 "use client";
 /* eslint-disable */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const SUPABASE_URL = "https://tubmkeowugsrngspckyk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1Ym1rZW93dWdzcm5nc3Bja3lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzY0NTMsImV4cCI6MjA5NTY1MjQ1M30.V759F71RtxDtTFd7qS_RXShbbuFzVxI8AgNMJ9SJZPg";
@@ -58,6 +58,56 @@ const emptyForm: FormState = {
 const filters = ["Sve", "kafa", "brunch", "desert", "date place", "work friendly", "nightlife", "shopping"];
 const ALL_CATS = ["kafa","brunch","desert","date place","work friendly","nightlife","shopping"];
 const ALL_TAGS = ["cozy","minimal","luxury","aesthetic","study spot","chill","sport","neighborhood","classic","quick stop"];
+
+// ── SWIPEABLE GALLERY ─────────────────────────────────────────────
+const SwipeableGallery = ({ images, darkMode }: { images: string[]; darkMode: boolean }) => {
+  const [idx, setIdx] = useState(0);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  const borderCol = darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+
+  const prev = () => setIdx(i => (i - 1 + images.length) % images.length);
+  const next = () => setIdx(i => (i + 1) % images.length);
+
+  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchMove = (e: React.TouchEvent) => { touchEndX.current = e.touches[0].clientX; };
+  const onTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+  };
+
+  return (
+    <div style={{ position: "relative", height: "55vh", overflow: "hidden", userSelect: "none" }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      <img
+        src={images[idx]}
+        alt="gallery"
+        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.3s" }}
+      />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(12,11,9,0.3) 0%, rgba(12,11,9,0.9) 100%)" }}/>
+
+      {/* Left/right tap zones for desktop */}
+      {images.length > 1 && (
+        <>
+          <button onClick={prev} style={{ position: "absolute", left: 0, top: 0, width: "40%", height: "100%", background: "transparent", border: "none", cursor: "pointer", zIndex: 5 }}/>
+          <button onClick={next} style={{ position: "absolute", right: 0, top: 0, width: "40%", height: "100%", background: "transparent", border: "none", cursor: "pointer", zIndex: 5 }}/>
+        </>
+      )}
+
+      {/* Dots */}
+      {images.length > 1 && (
+        <div style={{ position: "absolute", bottom: "90px", left: 0, right: 0, display: "flex", justifyContent: "center", gap: "6px", zIndex: 10 }}>
+          {images.map((_: string, i: number) => (
+            <button key={i} onClick={() => setIdx(i)} style={{ width: i === idx ? "24px" : "6px", height: "6px", borderRadius: "99px", border: "none", background: i === idx ? "#d4a853" : "rgba(255,255,255,0.4)", cursor: "pointer", transition: "all 0.3s", padding: 0, zIndex: 10 }}/>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ── ADMIN FIELD (outside AdminPanel to prevent remount on keystroke) ──
 const AdminField = ({
@@ -155,7 +205,7 @@ const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: 
               <p style={{ margin: "0 0 10px", fontSize: "11px", color: subtleText }}>{"🕐 " + c.hours}</p>
               <div style={{ display: "flex", gap: "6px" }}>
                 <button onClick={() => onSelect(c)} style={{ background: "linear-gradient(135deg, #d4a853, #b8893a)", border: "none", color: "#0c0b09", borderRadius: "99px", padding: "5px 14px", fontSize: "11px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Recenzija</button>
-                <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Čačak")} target="_blank" rel="noreferrer" style={{ background: cardBg, border: "1px solid " + borderCol, color: subtleText, borderRadius: "99px", padding: "5px 14px", fontSize: "11px", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Maps</a>
+                <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" style={{ background: cardBg, border: "1px solid " + borderCol, color: subtleText, borderRadius: "99px", padding: "5px 14px", fontSize: "11px", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Maps</a>
               </div>
             </div>
           </div>
@@ -413,7 +463,6 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState("Sve");
   const [searchQuery, setSearchQuery] = useState("");
   const [darkMode, setDarkMode] = useState(true);
-  const [galleryIdx, setGalleryIdx] = useState(0);
   const [savedCafes, setSavedCafes] = useState<number[]>([]);
   const [showMap, setShowMap] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
@@ -429,6 +478,28 @@ export default function App() {
   };
 
   useEffect(() => { loadCafes(); }, []);
+
+  // Intercept browser back button — return to home instead of leaving site
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      if (page === "detail") { setPage("home"); setSelectedCafe(null); window.history.pushState(null, "", window.location.pathname); }
+    };
+    if (page === "detail") { window.history.pushState(null, "", window.location.pathname); }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [page]);
+
+  const goToDetail = (cafe: Cafe) => {
+    setSelectedCafe(cafe);
+    setPage("detail");
+    window.scrollTo(0, 0);
+  };
+
+  const goHome = () => {
+    setPage("home");
+    setSelectedCafe(null);
+  };
 
   const filtered = cafes.filter(c => {
     const matchFilter = activeFilter === "Sve" || (c.category && c.category.includes(activeFilter));
@@ -455,6 +526,7 @@ export default function App() {
   // ── DETAIL PAGE ──────────────────────────────────────────────
   if (page === "detail" && selectedCafe) {
     const c = selectedCafe;
+    const galleryImages = c.gallery && c.gallery.length > 0 ? c.gallery : [c.image];
     const safeRatings: Ratings = {
       kafa: (c.ratings as any)?.kafa ?? 0,
       ambijent: (c.ratings as any)?.ambijent ?? 0,
@@ -465,24 +537,25 @@ export default function App() {
     };
     return (
       <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
-        <div style={{ position: "relative", height: "55vh", overflow: "hidden" }}>
-          <img src={c.gallery && c.gallery[galleryIdx] ? c.gallery[galleryIdx] : c.image} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover" }}/>
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(12,11,9,0.3) 0%, rgba(12,11,9,0.9) 100%)" }}/>
-          <button onClick={() => { setPage("home"); setGalleryIdx(0); }} style={{ position: "absolute", top: "20px", left: "20px", background: "rgba(12,11,9,0.6)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.15)", color: "#f0ece4", borderRadius: "50px", padding: "8px 18px", fontSize: "13px", cursor: "pointer" }}>Nazad</button>
-          <button onClick={() => toggleSave(c.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "rgba(12,11,9,0.6)", backdropFilter: "blur(12px)", border: "1px solid " + (savedCafes.includes(c.id) ? "#d4a853" : "rgba(255,255,255,0.15)"), color: savedCafes.includes(c.id) ? "#d4a853" : "#f0ece4", borderRadius: "50%", width: "42px", height: "42px", fontSize: "18px", cursor: "pointer" }}>{savedCafes.includes(c.id) ? "♥" : "♡"}</button>
-          <div style={{ position: "absolute", bottom: "28px", left: "24px", right: "24px" }}>
+        {/* Swipeable gallery with overlay buttons */}
+        <div style={{ position: "relative" }}>
+          <SwipeableGallery images={galleryImages} darkMode={darkMode}/>
+          {/* Back button */}
+          <button onClick={goHome} style={{ position: "absolute", top: "20px", left: "20px", background: "rgba(12,11,9,0.6)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.15)", color: "#f0ece4", borderRadius: "50px", padding: "8px 18px", fontSize: "13px", cursor: "pointer", zIndex: 20, display: "flex", alignItems: "center", gap: "6px" }}>
+            &#8592; Nazad
+          </button>
+          {/* Save button */}
+          <button onClick={() => toggleSave(c.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "rgba(12,11,9,0.6)", backdropFilter: "blur(12px)", border: "1px solid " + (savedCafes.includes(c.id) ? "#d4a853" : "rgba(255,255,255,0.15)"), color: savedCafes.includes(c.id) ? "#d4a853" : "#f0ece4", borderRadius: "50%", width: "42px", height: "42px", fontSize: "18px", cursor: "pointer", zIndex: 20 }}>{savedCafes.includes(c.id) ? "♥" : "♡"}</button>
+          {/* Title overlay */}
+          <div style={{ position: "absolute", bottom: "20px", left: "24px", right: "24px", zIndex: 20 }}>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
               {c.tags && c.tags.map(t => <span key={t} style={{ background: "rgba(212,168,83,0.2)", border: "1px solid rgba(212,168,83,0.4)", color: "#d4a853", borderRadius: "99px", padding: "3px 10px", fontSize: "11px" }}>{t}</span>)}
             </div>
-            <h1 style={{ fontSize: "clamp(28px,8vw,42px)", fontWeight: "400", margin: "0 0 4px", letterSpacing: "-1px" }}>{c.name}</h1>
+            <h1 style={{ fontSize: "clamp(28px,8vw,42px)", fontWeight: "400", margin: "0 0 4px", letterSpacing: "-1px", color: "#f0ece4" }}>{c.name}</h1>
             <p style={{ margin: 0, color: "rgba(240,236,228,0.6)", fontSize: "14px" }}>{"📍 " + c.address}</p>
           </div>
         </div>
-        {c.gallery && c.gallery.length > 1 && (
-          <div style={{ display: "flex", justifyContent: "center", gap: "6px", padding: "16px 0 4px" }}>
-            {c.gallery.map((_: string, i: number) => <button key={i} onClick={() => setGalleryIdx(i)} style={{ width: i === galleryIdx ? "24px" : "6px", height: "6px", borderRadius: "99px", border: "none", background: i === galleryIdx ? "#d4a853" : borderCol, cursor: "pointer", transition: "all 0.3s", padding: 0 }}/>)}
-          </div>
-        )}
+
         <div style={{ padding: "20px 24px", maxWidth: "600px", margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "28px", padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol }}>
             <div style={{ position: "relative", width: "80px", height: "80px", flexShrink: 0 }}>
@@ -498,12 +571,14 @@ export default function App() {
               <span style={{ fontSize: "12px", color: subtleText }}>{c.price_range + " · " + c.hours}</span>
             </div>
           </div>
+
           {c.ratings && (
             <div style={{ padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol, marginBottom: "20px" }}>
               <h3 style={{ margin: "0 0 16px", fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText }}>Ocene po kategorijama</h3>
               {(Object.keys(safeRatings) as Array<keyof Ratings>).map(k => <RatingBar key={k} label={k} value={safeRatings[k]}/>)}
             </div>
           )}
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
             <div style={{ padding: "16px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol }}>
               <p style={{ margin: "0 0 6px", fontSize: "11px", color: "#d4a853", letterSpacing: "1px", textTransform: "uppercase" }}>Sta probati</p>
@@ -514,6 +589,7 @@ export default function App() {
               <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.4 }}>{c.best_time}</p>
             </div>
           </div>
+
           {c.instagram ? (
             <a href={"https://instagram.com/" + c.instagram.replace("@","")} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(135deg,rgba(212,168,83,0.12),rgba(212,168,83,0.04))", borderRadius: "16px", border: "1px solid rgba(212,168,83,0.25)", textDecoration: "none", marginBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -527,18 +603,21 @@ export default function App() {
               <span style={{ fontSize: "22px" }}>📸</span><p style={{ margin: 0, fontSize: "13px", color: subtleText }}>Nema Instagram profila</p>
             </div>
           )}
-          <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Čačak")} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textDecoration: "none", color: "inherit", marginBottom: "24px" }}>
+
+          <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textDecoration: "none", color: "inherit", marginBottom: "24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span style={{ fontSize: "22px" }}>🗺️</span>
               <div><p style={{ margin: "0 0 2px", fontSize: "12px", color: subtleText }}>Lokacija</p><p style={{ margin: 0, fontSize: "14px", fontWeight: "600" }}>{c.address}</p></div>
             </div>
             <span style={{ color: "#d4a853", fontSize: "18px" }}>→</span>
           </a>
+
           <CommentsSection cafeId={c.id} darkMode={darkMode}/>
+
           <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, margin: "24px 0 12px" }}>Slicni lokali</h3>
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
             {cafes.filter(x => x.id !== c.id).slice(0,3).map(sim => (
-              <button key={sim.id} onClick={() => { setSelectedCafe(sim); setGalleryIdx(0); window.scrollTo(0,0); }} style={{ flexShrink: 0, width: "140px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit" }}>
+              <button key={sim.id} onClick={() => goToDetail(sim)} style={{ flexShrink: 0, width: "140px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit" }}>
                 <img src={sim.image} alt={sim.name} style={{ width: "100%", height: "80px", objectFit: "cover" }}/>
                 <div style={{ padding: "10px" }}><p style={{ margin: "0 0 2px", fontSize: "13px", fontWeight: "600" }}>{sim.name}</p><p style={{ margin: 0, fontSize: "12px", color: "#d4a853" }}>{sim.score}/10</p></div>
               </button>
@@ -608,10 +687,10 @@ export default function App() {
       {showMap && (
         <div style={{ padding: "0 24px 32px" }}>
           <div style={{ marginBottom: "16px" }}>
-            <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "400" }}>Svi lokali u Cacku</h2>
+            <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "400" }}>Svi lokali u Čačku</h2>
             <p style={{ margin: "4px 0 0", fontSize: "13px", color: subtleText }}>Klikni Maps za navigaciju</p>
           </div>
-          <LocationList cafes={cafes} onSelect={c => { setSelectedCafe(c); setPage("detail"); setShowMap(false); }} darkMode={darkMode}/>
+          <LocationList cafes={cafes} onSelect={c => { goToDetail(c); setShowMap(false); }} darkMode={darkMode}/>
         </div>
       )}
 
@@ -627,7 +706,7 @@ export default function App() {
         <div style={{ margin: "32px 24px 0", padding: "20px", background: "linear-gradient(135deg,rgba(212,168,83,0.12),rgba(138,105,58,0.06))", border: "1px solid rgba(212,168,83,0.2)", borderRadius: "20px" }}>
           <p style={{ margin: "0 0 4px", fontSize: "11px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase" }}>Ovog meseca</p>
           <p style={{ margin: "0 0 12px", fontSize: "18px", fontWeight: "600" }}>Top ocenjeni: <span style={{ color: "#d4a853" }}>{sorted[0].name + " " + sorted[0].score + "/10"}</span></p>
-          <button onClick={() => { setSelectedCafe(sorted[0]); setPage("detail"); }} style={{ background: "rgba(212,168,83,0.15)", border: "1px solid rgba(212,168,83,0.3)", color: "#d4a853", borderRadius: "99px", padding: "7px 16px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>Pogledaj recenziju</button>
+          <button onClick={() => goToDetail(sorted[0])} style={{ background: "rgba(212,168,83,0.15)", border: "1px solid rgba(212,168,83,0.3)", color: "#d4a853", borderRadius: "99px", padding: "7px 16px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>Pogledaj recenziju</button>
         </div>
       )}
 
@@ -649,7 +728,7 @@ export default function App() {
         ) : (
           <div style={{ display: "grid", gap: "16px" }}>
             {sorted.map((c, i) => (
-              <button key={c.id} onClick={() => { setSelectedCafe(c); setPage("detail"); }} style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "20px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", display: "grid", gridTemplateColumns: "130px 1fr", minHeight: "140px", transition: "transform 0.2s, box-shadow 0.2s" }}
+              <button key={c.id} onClick={() => goToDetail(c)} style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "20px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", display: "grid", gridTemplateColumns: "130px 1fr", minHeight: "140px", transition: "transform 0.2s, box-shadow 0.2s" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow=darkMode?"0 12px 40px rgba(212,168,83,0.12)":"0 12px 40px rgba(0,0,0,0.1)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform=""; (e.currentTarget as HTMLButtonElement).style.boxShadow=""; }}
               >
@@ -684,7 +763,7 @@ export default function App() {
           <h3 style={{ margin: "0 0 16px", fontSize: "20px", fontWeight: "400" }}>Mesta koja vredi otkriti</h3>
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px", scrollbarWidth: "none" }}>
             {cafes.filter(c => c.score >= 8).map(c => (
-              <button key={c.id} onClick={() => { setSelectedCafe(c); setPage("detail"); }} style={{ flexShrink: 0, width: "160px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit" }}>
+              <button key={c.id} onClick={() => goToDetail(c)} style={{ flexShrink: 0, width: "160px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit" }}>
                 <img src={c.image} alt={c.name} style={{ width: "100%", height: "100px", objectFit: "cover" }}/>
                 <div style={{ padding: "10px 12px" }}>
                   <p style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: "600" }}>{c.name}</p>
