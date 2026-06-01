@@ -207,7 +207,7 @@ const WelcomeModal = ({ onClose, darkMode }: { onClose: () => void; darkMode: bo
           Dobrodošli u<br/><span style={{ background: "linear-gradient(135deg,#d4a853,#f0d090,#8a6a3a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: "600" }}>vodič kafića</span>
         </h2>
         <p style={{ margin: "0 0 24px", fontSize: "14px", lineHeight: 1.7, color: darkMode ? "#6b6055" : "#9a8878" }}>
-          Pogledajte kafice koje smo mi ocenili, pronađite savršeno mesto za vas i ostavite vaš komentar!
+          Pogledajte kafiće koje smo mi ocenili, pronađite savršeno mesto za vas i ostavite vaš komentar!
         </p>
         {/* Stats row */}
         <div style={{ display: "flex", justifyContent: "center", gap: "24px", marginBottom: "28px", padding: "16px", background: darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", borderRadius: "16px", border: darkMode ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.06)" }}>
@@ -219,7 +219,7 @@ const WelcomeModal = ({ onClose, darkMode }: { onClose: () => void; darkMode: bo
           ))}
         </div>
         <button onClick={handleClose} className="btn-hover" style={{ width: "100%", padding: "15px", background: "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "14px", fontSize: "16px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit", letterSpacing: "-0.3px" }}>
-          Istraži kafice ✦
+          Istraži kafiće ✦
         </button>
         <p style={{ margin: "12px 0 0", fontSize: "11px", color: darkMode ? "#4a3828" : "#c8b89a" }}>Klikni bilo gde da zatvoriš</p>
       </div>
@@ -346,7 +346,7 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
               <label style={lbl}>Opis</label>
               <textarea value={form.description} onChange={e => setField("description", e.target.value)} placeholder="Kratki opis lokala..." style={{ ...inp, minHeight: "80px", resize: "vertical" as const }}/>
             </div>
-            <AdminField label="Sta probati" field="must_try" value={form.must_try} onChange={setField} placeholder="npr. Cappuccino" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Šta probati" field="must_try" value={form.must_try} onChange={setField} placeholder="npr. Cappuccino" darkMode={darkMode} borderCol={borderCol}/>
             <AdminField label="Najbolje vreme" field="best_time" value={form.best_time} onChange={setField} placeholder="npr. Jutro, 9-11h" darkMode={darkMode} borderCol={borderCol}/>
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Slike (URL)</label>
@@ -615,7 +615,7 @@ export default function App() {
             <span style={{ color: "#d4a853", fontSize: "18px" }}>→</span>
           </a>
           <CommentsSection cafeId={c.id} darkMode={darkMode}/>
-          <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, margin: "24px 0 12px" }}>Slicni lokali</h3>
+          <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, margin: "24px 0 12px" }}>Slični lokali</h3>
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
             {cafes.filter(x => x.id !== c.id).slice(0,3).map((sim, i) => (
               <button key={sim.id} onClick={() => goToDetail(sim)} className="card-hover" style={{ flexShrink: 0, width: "140px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", animation: "fadeInUp 0.4s " + (i * 0.1) + "s both" }}>
