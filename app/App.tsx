@@ -28,16 +28,13 @@ async function dbDelete(table: string, id: number) {
 }
 
 type Ratings = { kafa: number; ambijent: number; usluga: number; cena: number; internet: number; muzika: number; };
-
 type Cafe = {
   id: number; name: string; address: string; score: number;
   category: string[]; tags: string[]; price_range: string; hours: string;
   instagram: string; description: string; must_try: string; best_time: string;
   image: string; gallery: string[]; ratings: Ratings;
 };
-
 type Comment = { id: number; cafe_id: number; name: string; email: string; text: string; score: number; created_at: string; };
-
 type FormState = {
   name: string; address: string; score: number; hours: string; instagram: string;
   description: string; must_try: string; best_time: string; price_range: string;
@@ -46,25 +43,46 @@ type FormState = {
 };
 
 const defaultRatings: Ratings = { kafa: 7.0, ambijent: 7.0, usluga: 7.0, cena: 7.0, internet: 7.0, muzika: 7.0 };
-
 const emptyForm: FormState = {
   name: "", address: "", score: 7.0, hours: "", instagram: "", description: "",
   must_try: "", best_time: "", price_range: "1-500 din", image: "",
   gallery1: "", gallery2: "", gallery3: "",
-  category: ["kafa"], tags: ["cozy"],
-  ratings: { ...defaultRatings }
+  category: ["kafa"], tags: ["cozy"], ratings: { ...defaultRatings }
 };
-
 const filters = ["Sve", "kafa", "brunch", "desert", "date place", "work friendly", "nightlife", "shopping"];
 const ALL_CATS = ["kafa","brunch","desert","date place","work friendly","nightlife","shopping"];
 const ALL_TAGS = ["cozy","minimal","luxury","aesthetic","study spot","chill","sport","neighborhood","classic","quick stop"];
+
+// ── GLOBAL STYLES ─────────────────────────────────────────────────
+const globalStyles = `
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.92) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes floatUp { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+  @keyframes rotateSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(.4,0,.2,1) both; }
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  .scale-in { animation: scaleIn 0.5s cubic-bezier(.4,0,.2,1) both; }
+  .slide-left { animation: slideInLeft 0.5s cubic-bezier(.4,0,.2,1) both; }
+  .slide-right { animation: slideInRight 0.5s cubic-bezier(.4,0,.2,1) both; }
+  .card-hover { transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1), border-color 0.25s; }
+  .card-hover:hover { transform: translateY(-4px) scale(1.01); }
+  .btn-hover { transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s; }
+  .btn-hover:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,168,83,0.3); }
+  .btn-hover:active { transform: scale(0.97); }
+  * { -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { display: none; }
+`;
 
 // ── SWIPEABLE GALLERY ─────────────────────────────────────────────
 const SwipeableGallery = ({ images, darkMode }: { images: string[]; darkMode: boolean }) => {
   const [idx, setIdx] = useState(0);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
-  const borderCol = darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
   const prev = () => setIdx(i => (i - 1 + images.length) % images.length);
   const next = () => setIdx(i => (i + 1) % images.length);
@@ -78,53 +96,37 @@ const SwipeableGallery = ({ images, darkMode }: { images: string[]; darkMode: bo
 
   return (
     <div style={{ position: "relative", height: "55vh", overflow: "hidden", userSelect: "none" }}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      <img
-        src={images[idx]}
-        alt="gallery"
-        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.3s" }}
-      />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(12,11,9,0.3) 0%, rgba(12,11,9,0.9) 100%)" }}/>
-
-      {/* Left/right tap zones for desktop */}
+      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <img src={images[idx]} alt="gallery" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.4s ease" }}/>
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(12,11,9,0.25) 0%, rgba(12,11,9,0.92) 100%)" }}/>
       {images.length > 1 && (
         <>
           <button onClick={prev} style={{ position: "absolute", left: 0, top: 0, width: "40%", height: "100%", background: "transparent", border: "none", cursor: "pointer", zIndex: 5 }}/>
           <button onClick={next} style={{ position: "absolute", right: 0, top: 0, width: "40%", height: "100%", background: "transparent", border: "none", cursor: "pointer", zIndex: 5 }}/>
+          <div style={{ position: "absolute", bottom: "88px", left: 0, right: 0, display: "flex", justifyContent: "center", gap: "6px", zIndex: 10 }}>
+            {images.map((_: string, i: number) => (
+              <button key={i} onClick={() => setIdx(i)} style={{ width: i === idx ? "24px" : "6px", height: "6px", borderRadius: "99px", border: "none", background: i === idx ? "#d4a853" : "rgba(255,255,255,0.4)", cursor: "pointer", transition: "all 0.3s", padding: 0 }}/>
+            ))}
+          </div>
         </>
-      )}
-
-      {/* Dots */}
-      {images.length > 1 && (
-        <div style={{ position: "absolute", bottom: "90px", left: 0, right: 0, display: "flex", justifyContent: "center", gap: "6px", zIndex: 10 }}>
-          {images.map((_: string, i: number) => (
-            <button key={i} onClick={() => setIdx(i)} style={{ width: i === idx ? "24px" : "6px", height: "6px", borderRadius: "99px", border: "none", background: i === idx ? "#d4a853" : "rgba(255,255,255,0.4)", cursor: "pointer", transition: "all 0.3s", padding: 0, zIndex: 10 }}/>
-          ))}
-        </div>
       )}
     </div>
   );
 };
 
-// ── ADMIN FIELD (outside AdminPanel to prevent remount on keystroke) ──
-const AdminField = ({
-  label, field, value, onChange, type = "text", placeholder = "", darkMode, borderCol
-}: {
+// ── ADMIN FIELD ───────────────────────────────────────────────────
+const AdminField = ({ label, field, value, onChange, type = "text", placeholder = "", darkMode, borderCol }: {
   label: string; field: string; value: string | number;
   onChange: (f: string, v: string | number) => void;
   type?: string; placeholder?: string; darkMode: boolean; borderCol: string;
 }) => (
   <div style={{ marginBottom: "14px" }}>
     <label style={{ fontSize: "11px", color: darkMode ? "#6b6055" : "#9a8878", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px", display: "block" }}>{label}</label>
-    <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
+    <input type={type} placeholder={placeholder} value={value}
       onChange={e => onChange(field, type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
-      style={{ width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
+      style={{ width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box", transition: "border-color 0.2s" }}
+      onFocus={e => e.target.style.borderColor = "#d4a853"}
+      onBlur={e => e.target.style.borderColor = borderCol}
     />
   </div>
 );
@@ -136,20 +138,20 @@ const ScoreRing = ({ score, size = 80 }: { score: number; size?: number }) => {
   return (
     <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4"/>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="4" strokeDasharray={pct + " " + circ} strokeLinecap="round" style={{ transition: "stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1)" }}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="4" strokeDasharray={pct + " " + circ} strokeLinecap="round" style={{ transition: "stroke-dasharray 1.4s cubic-bezier(.4,0,.2,1)" }}/>
     </svg>
   );
 };
 
 // ── RATING BAR ────────────────────────────────────────────────────
-const RatingBar = ({ label, value }: { label: string; value: number }) => (
-  <div style={{ marginBottom: "10px" }}>
+const RatingBar = ({ label, value, delay = 0 }: { label: string; value: number; delay?: number }) => (
+  <div style={{ marginBottom: "10px", animation: "fadeInUp 0.5s " + delay + "s both" }}>
     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
       <span style={{ fontSize: "12px", color: "#a09585", textTransform: "capitalize", letterSpacing: "0.5px" }}>{label}</span>
       <span style={{ fontSize: "12px", color: "#d4a853", fontWeight: "600" }}>{value}</span>
     </div>
     <div style={{ height: "3px", background: "rgba(255,255,255,0.07)", borderRadius: "99px", overflow: "hidden" }}>
-      <div style={{ height: "100%", width: (value * 10) + "%", background: "linear-gradient(90deg, #8a6a3a, #d4a853)", borderRadius: "99px", transition: "width 1s cubic-bezier(.4,0,.2,1)" }}/>
+      <div style={{ height: "100%", width: (value * 10) + "%", background: "linear-gradient(90deg, #8a6a3a, #d4a853)", borderRadius: "99px", transition: "width 1.2s cubic-bezier(.4,0,.2,1) " + delay + "s" }}/>
     </div>
   </div>
 );
@@ -160,16 +162,16 @@ const HeroCarousel = ({ cafes, darkMode }: { cafes: Cafe[]; darkMode: boolean })
   const images = cafes.slice(0, 4).map(c => ({ img: c.image, name: c.name, score: c.score }));
   useEffect(() => {
     if (!images.length) return;
-    const t = setInterval(() => setIdx(i => (i + 1) % images.length), 3000);
+    const t = setInterval(() => setIdx(i => (i + 1) % images.length), 3200);
     return () => clearInterval(t);
   }, [images.length]);
   if (!images.length) return null;
   return (
     <div style={{ display: "flex", gap: "8px", marginBottom: "32px", overflow: "hidden" }}>
       {images.map((item, i) => (
-        <div key={i} onClick={() => setIdx(i)} style={{ flexShrink: 0, width: i === idx ? "140px" : "56px", height: "80px", borderRadius: "14px", overflow: "hidden", cursor: "pointer", position: "relative", transition: "width 0.5s cubic-bezier(.4,0,.2,1)", border: i === idx ? "1.5px solid rgba(212,168,83,0.6)" : "1.5px solid transparent" }}>
+        <div key={i} onClick={() => setIdx(i)} className="btn-hover" style={{ flexShrink: 0, width: i === idx ? "140px" : "56px", height: "80px", borderRadius: "14px", overflow: "hidden", cursor: "pointer", position: "relative", transition: "width 0.5s cubic-bezier(.4,0,.2,1), box-shadow 0.3s", border: i === idx ? "1.5px solid rgba(212,168,83,0.7)" : "1.5px solid transparent", boxShadow: i === idx ? "0 4px 20px rgba(212,168,83,0.25)" : "none" }}>
           <img src={item.img} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }}/>
-          <div style={{ position: "absolute", inset: 0, background: i === idx ? "linear-gradient(to top, rgba(12,11,9,0.7) 0%, transparent 60%)" : "rgba(12,11,9,0.4)" }}/>
+          <div style={{ position: "absolute", inset: 0, background: i === idx ? "linear-gradient(to top, rgba(12,11,9,0.75) 0%, transparent 60%)" : "rgba(12,11,9,0.45)" }}/>
           {i === idx && (
             <div style={{ position: "absolute", bottom: "6px", left: "8px", right: "8px" }}>
               <p style={{ margin: 0, fontSize: "10px", fontWeight: "700", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
@@ -182,6 +184,49 @@ const HeroCarousel = ({ cafes, darkMode }: { cafes: Cafe[]; darkMode: boolean })
   );
 };
 
+// ── WELCOME MODAL ─────────────────────────────────────────────────
+const WelcomeModal = ({ onClose, darkMode }: { onClose: () => void; darkMode: boolean }) => {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { setTimeout(() => setVisible(true), 100); }, []);
+  const handleClose = () => { setVisible(false); setTimeout(onClose, 400); };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", transition: "opacity 0.4s", opacity: visible ? 1 : 0 }}>
+      {/* Blur backdrop */}
+      <div onClick={handleClose} style={{ position: "absolute", inset: 0, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", background: "rgba(0,0,0,0.65)" }}/>
+      {/* Modal */}
+      <div style={{ position: "relative", background: darkMode ? "linear-gradient(145deg, #1a1510, #0f0d09)" : "linear-gradient(145deg, #fff, #f7f3ee)", border: "1px solid rgba(212,168,83,0.3)", borderRadius: "28px", padding: "36px 28px", maxWidth: "360px", width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,168,83,0.1)", transform: visible ? "scale(1) translateY(0)" : "scale(0.88) translateY(30px)", transition: "transform 0.5s cubic-bezier(.34,1.56,.64,1)", textAlign: "center" }}>
+        {/* Glow orb */}
+        <div style={{ position: "absolute", top: "-30px", left: "50%", transform: "translateX(-50%)", width: "80px", height: "80px", background: "radial-gradient(circle, rgba(212,168,83,0.5) 0%, transparent 70%)", filter: "blur(16px)", borderRadius: "50%" }}/>
+        {/* Coffee icon */}
+        <div style={{ fontSize: "48px", marginBottom: "16px", animation: "floatUp 3s ease-in-out infinite" }}>☕</div>
+        {/* Badge */}
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.35)", borderRadius: "99px", padding: "5px 14px", fontSize: "10px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "16px" }}>
+          ✦ Čačak Coffee Guide
+        </div>
+        <h2 style={{ margin: "0 0 12px", fontSize: "26px", fontWeight: "400", letterSpacing: "-0.5px", lineHeight: 1.2, color: darkMode ? "#f0ece4" : "#1a1510" }}>
+          Dobrodošli u<br/><span style={{ background: "linear-gradient(135deg,#d4a853,#f0d090,#8a6a3a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: "600" }}>vodič kafića</span>
+        </h2>
+        <p style={{ margin: "0 0 24px", fontSize: "14px", lineHeight: 1.7, color: darkMode ? "#6b6055" : "#9a8878" }}>
+          Pogledajte kafice koje smo mi ocenili, pronađite savršeno mesto za vas i ostavite vaš komentar!
+        </p>
+        {/* Stats row */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "24px", marginBottom: "28px", padding: "16px", background: darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", borderRadius: "16px", border: darkMode ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.06)" }}>
+          {[["☕", "Kafici"], ["⭐", "Recenzije"], ["💬", "Komentari"]].map(([icon, label]) => (
+            <div key={label} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "20px", marginBottom: "2px" }}>{icon}</div>
+              <div style={{ fontSize: "10px", color: "#d4a853", letterSpacing: "0.5px" }}>{label}</div>
+            </div>
+          ))}
+        </div>
+        <button onClick={handleClose} className="btn-hover" style={{ width: "100%", padding: "15px", background: "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "14px", fontSize: "16px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit", letterSpacing: "-0.3px" }}>
+          Istraži kafice ✦
+        </button>
+        <p style={{ margin: "12px 0 0", fontSize: "11px", color: darkMode ? "#4a3828" : "#c8b89a" }}>Klikni bilo gde da zatvoriš</p>
+      </div>
+    </div>
+  );
+};
+
 // ── LOCATION LIST ─────────────────────────────────────────────────
 const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: (c: Cafe) => void; darkMode: boolean }) => {
   const cardBg = darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
@@ -190,10 +235,10 @@ const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: 
   return (
     <div style={{ display: "grid", gap: "12px" }}>
       {[...cafes].sort((a, b) => b.score - a.score).map((c, i) => (
-        <div key={c.id} style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "20px", overflow: "hidden" }}>
+        <div key={c.id} className="card-hover" style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "20px", overflow: "hidden", animation: "fadeInUp 0.5s " + (i * 0.05) + "s both" }}>
           <div style={{ display: "grid", gridTemplateColumns: "100px 1fr", minHeight: "100px" }}>
             <div style={{ position: "relative", overflow: "hidden" }}>
-              <img src={c.image} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover" }}/>
+              <img src={c.image} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }}/>
               {i === 0 && <div style={{ position: "absolute", top: "6px", left: "6px", background: "#d4a853", color: "#0c0b09", borderRadius: "99px", padding: "2px 7px", fontSize: "9px", fontWeight: "800" }}>TOP</div>}
             </div>
             <div style={{ padding: "14px" }}>
@@ -204,8 +249,8 @@ const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: 
               <p style={{ margin: "0 0 4px", fontSize: "11px", color: subtleText }}>{"📍 " + c.address}</p>
               <p style={{ margin: "0 0 10px", fontSize: "11px", color: subtleText }}>{"🕐 " + c.hours}</p>
               <div style={{ display: "flex", gap: "6px" }}>
-                <button onClick={() => onSelect(c)} style={{ background: "linear-gradient(135deg, #d4a853, #b8893a)", border: "none", color: "#0c0b09", borderRadius: "99px", padding: "5px 14px", fontSize: "11px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Recenzija</button>
-                <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" style={{ background: cardBg, border: "1px solid " + borderCol, color: subtleText, borderRadius: "99px", padding: "5px 14px", fontSize: "11px", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Maps</a>
+                <button onClick={() => onSelect(c)} className="btn-hover" style={{ background: "linear-gradient(135deg, #d4a853, #b8893a)", border: "none", color: "#0c0b09", borderRadius: "99px", padding: "5px 14px", fontSize: "11px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Recenzija</button>
+                <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" style={{ background: cardBg, border: "1px solid " + borderCol, color: subtleText, borderRadius: "99px", padding: "5px 14px", fontSize: "11px", textDecoration: "none", display: "inline-flex", alignItems: "center", transition: "border-color 0.2s, color 0.2s" }}>Maps</a>
               </div>
             </div>
           </div>
@@ -231,93 +276,65 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
   const inp: React.CSSProperties = { width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 
   const setField = (field: string, val: string | number) => setForm(f => ({ ...f, [field]: val }));
-
   const handleSave = async () => {
     if (!form.name || !form.address || !form.image) { alert("Popuni naziv, adresu i sliku!"); return; }
     setSaving(true);
     const gallery = [form.gallery1, form.gallery2, form.gallery3].filter(Boolean);
-    const payload = {
-      name: form.name, address: form.address, score: form.score, hours: form.hours,
-      instagram: form.instagram, description: form.description, must_try: form.must_try,
-      best_time: form.best_time, price_range: form.price_range, image: form.image,
-      gallery: gallery.length ? gallery : [form.image],
-      category: form.category, tags: form.tags, ratings: form.ratings
-    };
-    if (editId !== null) { await dbUpdate("cafes", editId, payload); }
-    else { await dbInsert("cafes", payload); }
+    const payload = { name: form.name, address: form.address, score: form.score, hours: form.hours, instagram: form.instagram, description: form.description, must_try: form.must_try, best_time: form.best_time, price_range: form.price_range, image: form.image, gallery: gallery.length ? gallery : [form.image], category: form.category, tags: form.tags, ratings: form.ratings };
+    if (editId !== null) { await dbUpdate("cafes", editId, payload); } else { await dbInsert("cafes", payload); }
     await onRefresh();
     setSaving(false); setSaved(true);
     setTimeout(() => { setSaved(false); setTab("list"); setForm({ ...emptyForm, ratings: { ...defaultRatings } }); setEditId(null); }, 1200);
   };
-
   const handleEdit = (c: Cafe) => {
     const r = c.ratings && typeof c.ratings === "object" ? c.ratings : {};
-    const safeRatings: Ratings = {
-      kafa: (r as any).kafa ?? 7.0,
-      ambijent: (r as any).ambijent ?? 7.0,
-      usluga: (r as any).usluga ?? 7.0,
-      cena: (r as any).cena ?? 7.0,
-      internet: (r as any).internet ?? 7.0,
-      muzika: (r as any).muzika ?? 7.0,
-    };
-    setForm({
-      name: c.name, address: c.address, score: c.score, hours: c.hours,
-      instagram: c.instagram, description: c.description, must_try: c.must_try,
-      best_time: c.best_time, price_range: c.price_range, image: c.image,
-      gallery1: c.gallery[0] || "", gallery2: c.gallery[1] || "", gallery3: c.gallery[2] || "",
-      category: c.category || ["kafa"], tags: c.tags || ["cozy"],
-      ratings: safeRatings
-    });
+    const safeRatings: Ratings = { kafa: (r as any).kafa ?? 7.0, ambijent: (r as any).ambijent ?? 7.0, usluga: (r as any).usluga ?? 7.0, cena: (r as any).cena ?? 7.0, internet: (r as any).internet ?? 7.0, muzika: (r as any).muzika ?? 7.0 };
+    setForm({ name: c.name, address: c.address, score: c.score, hours: c.hours, instagram: c.instagram, description: c.description, must_try: c.must_try, best_time: c.best_time, price_range: c.price_range, image: c.image, gallery1: c.gallery[0] || "", gallery2: c.gallery[1] || "", gallery3: c.gallery[2] || "", category: c.category || ["kafa"], tags: c.tags || ["cozy"], ratings: safeRatings });
     setEditId(c.id); setTab("add");
   };
-
   const handleDelete = async (id: number) => {
     if (!confirm("Obrisati ovaj lokal?")) return;
-    await dbDelete("cafes", id);
-    await onRefresh();
+    await dbDelete("cafes", id); await onRefresh();
   };
-
   const toggleCat = (cat: string) => setForm(f => ({ ...f, category: f.category.includes(cat) ? f.category.filter(x => x !== cat) : [...f.category, cat] }));
   const toggleTag = (tag: string) => setForm(f => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter(x => x !== tag) : [...f.tags, tag] }));
   const setRating = (key: string, val: number) => setForm(f => ({ ...f, ratings: { ...f.ratings, [key]: val } }));
 
   return (
     <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
-      <div style={{ position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(20px)", background: darkMode ? "rgba(12,11,9,0.95)" : "rgba(247,243,238,0.95)", borderBottom: "1px solid " + borderCol, padding: "16px 24px", display: "flex", alignItems: "center", gap: "12px" }}>
-        <button onClick={onClose} style={{ background: cardBg, border: "1px solid " + borderCol, color: "inherit", borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", fontSize: "16px" }}>&#8592;</button>
+      <div style={{ position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(24px)", background: darkMode ? "rgba(12,11,9,0.92)" : "rgba(247,243,238,0.92)", borderBottom: "1px solid " + borderCol, padding: "16px 24px", display: "flex", alignItems: "center", gap: "12px" }}>
+        <button onClick={onClose} className="btn-hover" style={{ background: cardBg, border: "1px solid " + borderCol, color: "inherit", borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", fontSize: "16px" }}>&#8592;</button>
         <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600", flex: 1 }}>Admin Panel</h2>
         <div style={{ display: "flex", gap: "8px" }}>
           {(["list", "add"] as const).map(t => (
-            <button key={t} onClick={() => { setTab(t); if (t === "add") { setForm({ ...emptyForm, ratings: { ...defaultRatings } }); setEditId(null); } }} style={{ padding: "7px 16px", background: tab === t ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (tab === t ? "transparent" : borderCol), color: tab === t ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", fontWeight: tab === t ? "700" : "400" }}>
+            <button key={t} onClick={() => { setTab(t); if (t === "add") { setForm({ ...emptyForm, ratings: { ...defaultRatings } }); setEditId(null); } }} className="btn-hover" style={{ padding: "7px 16px", background: tab === t ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (tab === t ? "transparent" : borderCol), color: tab === t ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", fontWeight: tab === t ? "700" : "400" }}>
               {t === "list" ? "Lokali" : "Dodaj"}
             </button>
           ))}
         </div>
       </div>
-
       <div style={{ padding: "24px", maxWidth: "600px", margin: "0 auto" }}>
         {tab === "list" && (
-          <div>
+          <div className="fade-in">
             <p style={{ margin: "0 0 16px", fontSize: "13px", color: subtleText }}>Ukupno: {cafes.length} lokala</p>
             <div style={{ display: "grid", gap: "10px" }}>
               {[...cafes].sort((a, b) => b.score - a.score).map(c => (
-                <div key={c.id} style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+                <div key={c.id} className="card-hover" style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
                   <img src={c.image} alt={c.name} style={{ width: "48px", height: "48px", borderRadius: "10px", objectFit: "cover", flexShrink: 0 }}/>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: "0 0 2px", fontWeight: "700", fontSize: "14px" }}>{c.name}</p>
                     <p style={{ margin: 0, fontSize: "11px", color: subtleText }}>{c.address}</p>
                   </div>
                   <span style={{ color: "#d4a853", fontWeight: "700", fontSize: "16px", flexShrink: 0 }}>{c.score}</span>
-                  <button onClick={() => handleEdit(c)} style={{ background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.25)", color: "#d4a853", borderRadius: "8px", padding: "6px 10px", fontSize: "12px", cursor: "pointer" }}>Edit</button>
-                  <button onClick={() => handleDelete(c.id)} style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)", color: "#ff6060", borderRadius: "8px", padding: "6px 10px", fontSize: "12px", cursor: "pointer" }}>Del</button>
+                  <button onClick={() => handleEdit(c)} className="btn-hover" style={{ background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.25)", color: "#d4a853", borderRadius: "8px", padding: "6px 10px", fontSize: "12px", cursor: "pointer" }}>Edit</button>
+                  <button onClick={() => handleDelete(c.id)} className="btn-hover" style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)", color: "#ff6060", borderRadius: "8px", padding: "6px 10px", fontSize: "12px", cursor: "pointer" }}>Del</button>
                 </div>
               ))}
             </div>
           </div>
         )}
-
         {tab === "add" && (
-          <div>
+          <div className="fade-in">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: "400" }}>{editId ? "Izmeni lokal" : "Novi lokal"}</h3>
             <AdminField label="Naziv *" field="name" value={form.name} onChange={setField} placeholder="npr. Kafic Sunce" darkMode={darkMode} borderCol={borderCol}/>
             <AdminField label="Adresa *" field="address" value={form.address} onChange={setField} placeholder="npr. Cara Dusana 12" darkMode={darkMode} borderCol={borderCol}/>
@@ -331,7 +348,6 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
             </div>
             <AdminField label="Sta probati" field="must_try" value={form.must_try} onChange={setField} placeholder="npr. Cappuccino" darkMode={darkMode} borderCol={borderCol}/>
             <AdminField label="Najbolje vreme" field="best_time" value={form.best_time} onChange={setField} placeholder="npr. Jutro, 9-11h" darkMode={darkMode} borderCol={borderCol}/>
-
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Slike (URL)</label>
               <AdminField label="Glavna slika *" field="image" value={form.image} onChange={setField} placeholder="https://..." darkMode={darkMode} borderCol={borderCol}/>
@@ -339,7 +355,6 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
               <AdminField label="Galerija 2" field="gallery2" value={form.gallery2} onChange={setField} placeholder="https://..." darkMode={darkMode} borderCol={borderCol}/>
               <AdminField label="Galerija 3" field="gallery3" value={form.gallery3} onChange={setField} placeholder="https://..." darkMode={darkMode} borderCol={borderCol}/>
             </div>
-
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Ocene po kategorijama</label>
               {(Object.keys(defaultRatings) as Array<keyof Ratings>).map(k => (
@@ -349,23 +364,21 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
                 </div>
               ))}
             </div>
-
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "20px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Kategorije</label>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "12px" }}>
                 {ALL_CATS.map(cat => (
-                  <button key={cat} onClick={() => toggleCat(cat)} style={{ padding: "6px 12px", background: form.category.includes(cat) ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (form.category.includes(cat) ? "transparent" : borderCol), color: form.category.includes(cat) ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{cat}</button>
+                  <button key={cat} onClick={() => toggleCat(cat)} className="btn-hover" style={{ padding: "6px 12px", background: form.category.includes(cat) ? "linear-gradient(135deg, #d4a853, #b8893a)" : cardBg, border: "1px solid " + (form.category.includes(cat) ? "transparent" : borderCol), color: form.category.includes(cat) ? "#0c0b09" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{cat}</button>
                 ))}
               </div>
               <label style={{ ...lbl, color: "#d4a853" }}>Tagovi</label>
               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                 {ALL_TAGS.map(tag => (
-                  <button key={tag} onClick={() => toggleTag(tag)} style={{ padding: "6px 12px", background: form.tags.includes(tag) ? "rgba(212,168,83,0.2)" : cardBg, border: "1px solid " + (form.tags.includes(tag) ? "rgba(212,168,83,0.5)" : borderCol), color: form.tags.includes(tag) ? "#d4a853" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{tag}</button>
+                  <button key={tag} onClick={() => toggleTag(tag)} className="btn-hover" style={{ padding: "6px 12px", background: form.tags.includes(tag) ? "rgba(212,168,83,0.2)" : cardBg, border: "1px solid " + (form.tags.includes(tag) ? "rgba(212,168,83,0.5)" : borderCol), color: form.tags.includes(tag) ? "#d4a853" : "inherit", borderRadius: "99px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>{tag}</button>
                 ))}
               </div>
             </div>
-
-            <button onClick={handleSave} disabled={saving} style={{ width: "100%", padding: "16px", background: saved ? "linear-gradient(135deg,#4caf50,#2e7d32)" : "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "14px", fontSize: "16px", fontWeight: "700", cursor: saving ? "wait" : "pointer", fontFamily: "inherit" }}>
+            <button onClick={handleSave} disabled={saving} className="btn-hover" style={{ width: "100%", padding: "16px", background: saved ? "linear-gradient(135deg,#4caf50,#2e7d32)" : "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "14px", fontSize: "16px", fontWeight: "700", cursor: saving ? "wait" : "pointer", fontFamily: "inherit" }}>
               {saving ? "Cuvam..." : saved ? "Sacuvano!" : editId ? "Sacuvaj izmene" : "Dodaj lokal"}
             </button>
           </div>
@@ -387,7 +400,7 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
   const cardBg = darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
   const borderCol = darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   const subtleText = darkMode ? "#6b6055" : "#9a8878";
-  const inp: React.CSSProperties = { width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+  const inp: React.CSSProperties = { width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box", transition: "border-color 0.2s" };
 
   useEffect(() => {
     setLoading(true);
@@ -410,34 +423,34 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
 
   return (
     <div>
-      <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: darkMode ? "#6b6055" : "#9a8878", marginBottom: "16px" }}>Komentari ({comments.length})</h3>
+      <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, marginBottom: "16px" }}>Komentari ({comments.length})</h3>
       <div style={{ padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol, marginBottom: "16px" }}>
-        <p style={{ margin: "0 0 14px", fontSize: "13px", color: darkMode ? "#6b6055" : "#9a8878" }}>Ostavi komentar</p>
+        <p style={{ margin: "0 0 14px", fontSize: "13px", color: subtleText }}>Ostavi komentar</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "10px" }}>
-          <input placeholder="Ime i prezime" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={inp}/>
-          <input placeholder="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} style={inp}/>
+          <input placeholder="Ime i prezime" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={inp} onFocus={e => e.target.style.borderColor="#d4a853"} onBlur={e => e.target.style.borderColor=borderCol}/>
+          <input placeholder="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} style={inp} onFocus={e => e.target.style.borderColor="#d4a853"} onBlur={e => e.target.style.borderColor=borderCol}/>
         </div>
-        <textarea placeholder="Tvoj komentar..." value={form.text} onChange={e => setForm(f => ({ ...f, text: e.target.value }))} style={{ ...inp, minHeight: "70px", resize: "vertical" as const, marginBottom: "10px" }}/>
+        <textarea placeholder="Tvoj komentar..." value={form.text} onChange={e => setForm(f => ({ ...f, text: e.target.value }))} style={{ ...inp, minHeight: "70px", resize: "vertical" as const, marginBottom: "10px" }} onFocus={e => e.target.style.borderColor="#d4a853"} onBlur={e => e.target.style.borderColor=borderCol}/>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
           <span style={{ fontSize: "12px", color: subtleText, flexShrink: 0 }}>Ocena:</span>
           <input type="range" min="1" max="10" step="0.5" value={form.score} onChange={e => setForm(f => ({ ...f, score: parseFloat(e.target.value) }))} style={{ flex: 1, accentColor: "#d4a853" }}/>
           <span style={{ color: "#d4a853", fontWeight: "700", minWidth: "40px", fontSize: "14px" }}>{form.score}/10</span>
         </div>
-        {error && <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#ff6060" }}>{error}</p>}
-        <button onClick={handleSubmit} disabled={submitting} style={{ width: "100%", padding: "12px", background: submitted ? "linear-gradient(135deg,#4caf50,#2e7d32)" : "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "12px", fontSize: "14px", fontWeight: "700", cursor: submitting ? "wait" : "pointer", fontFamily: "inherit" }}>
+        {error && <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#ff6060", animation: "fadeInUp 0.3s both" }}>{error}</p>}
+        <button onClick={handleSubmit} disabled={submitting} className="btn-hover" style={{ width: "100%", padding: "12px", background: submitted ? "linear-gradient(135deg,#4caf50,#2e7d32)" : "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "12px", fontSize: "14px", fontWeight: "700", cursor: submitting ? "wait" : "pointer", fontFamily: "inherit", transition: "background 0.4s" }}>
           {submitting ? "Saljem..." : submitted ? "Objavljeno!" : "Objavi komentar"}
         </button>
       </div>
       {loading ? (
-        <div style={{ padding: "20px", textAlign: "center", color: subtleText, fontSize: "13px" }}>Ucitavam...</div>
+        <div style={{ padding: "20px", textAlign: "center", color: subtleText, fontSize: "13px", animation: "pulse 1.5s infinite" }}>Ucitavam...</div>
       ) : comments.length === 0 ? (
         <div style={{ padding: "24px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textAlign: "center" }}>
-          <p style={{ margin: 0, color: subtleText, fontSize: "13px" }}>Nema komentara. Budi prvi!</p>
+          <p style={{ margin: 0, color: subtleText, fontSize: "13px" }}>Nema komentara. Budi prvi! ☕</p>
         </div>
       ) : (
         <div style={{ display: "grid", gap: "10px" }}>
-          {comments.map(comment => (
-            <div key={comment.id} style={{ padding: "16px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol }}>
+          {comments.map((comment, i) => (
+            <div key={comment.id} className="card-hover" style={{ padding: "16px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, animation: "fadeInUp 0.4s " + (i * 0.05) + "s both" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                 <div>
                   <p style={{ margin: "0 0 2px", fontWeight: "700", fontSize: "14px" }}>{comment.name}</p>
@@ -469,6 +482,8 @@ export default function App() {
   const [adminPrompt, setAdminPrompt] = useState(false);
   const [adminPass, setAdminPass] = useState("");
   const [adminError, setAdminError] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [pageTransition, setPageTransition] = useState(false);
 
   const loadCafes = async () => {
     setLoading(true);
@@ -477,9 +492,12 @@ export default function App() {
     setLoading(false);
   };
 
-  useEffect(() => { loadCafes(); }, []);
+  useEffect(() => {
+    loadCafes();
+    const seen = sessionStorage.getItem("okc_welcome");
+    if (!seen) { setTimeout(() => setShowWelcome(true), 800); }
+  }, []);
 
-  // Intercept browser back button — return to home instead of leaving site
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       e.preventDefault();
@@ -491,14 +509,18 @@ export default function App() {
   }, [page]);
 
   const goToDetail = (cafe: Cafe) => {
-    setSelectedCafe(cafe);
-    setPage("detail");
-    window.scrollTo(0, 0);
+    setPageTransition(true);
+    setTimeout(() => { setSelectedCafe(cafe); setPage("detail"); setPageTransition(false); window.scrollTo(0, 0); }, 200);
   };
 
   const goHome = () => {
-    setPage("home");
-    setSelectedCafe(null);
+    setPageTransition(true);
+    setTimeout(() => { setPage("home"); setSelectedCafe(null); setPageTransition(false); }, 200);
+  };
+
+  const handleWelcomeClose = () => {
+    setShowWelcome(false);
+    sessionStorage.setItem("okc_welcome", "1");
   };
 
   const filtered = cafes.filter(c => {
@@ -527,37 +549,24 @@ export default function App() {
   if (page === "detail" && selectedCafe) {
     const c = selectedCafe;
     const galleryImages = c.gallery && c.gallery.length > 0 ? c.gallery : [c.image];
-    const safeRatings: Ratings = {
-      kafa: (c.ratings as any)?.kafa ?? 0,
-      ambijent: (c.ratings as any)?.ambijent ?? 0,
-      usluga: (c.ratings as any)?.usluga ?? 0,
-      cena: (c.ratings as any)?.cena ?? 0,
-      internet: (c.ratings as any)?.internet ?? 0,
-      muzika: (c.ratings as any)?.muzika ?? 0,
-    };
+    const safeRatings: Ratings = { kafa: (c.ratings as any)?.kafa ?? 0, ambijent: (c.ratings as any)?.ambijent ?? 0, usluga: (c.ratings as any)?.usluga ?? 0, cena: (c.ratings as any)?.cena ?? 0, internet: (c.ratings as any)?.internet ?? 0, muzika: (c.ratings as any)?.muzika ?? 0 };
     return (
-      <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
-        {/* Swipeable gallery with overlay buttons */}
+      <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif", opacity: pageTransition ? 0 : 1, transition: "opacity 0.2s" }}>
+        <style>{globalStyles}</style>
         <div style={{ position: "relative" }}>
           <SwipeableGallery images={galleryImages} darkMode={darkMode}/>
-          {/* Back button */}
-          <button onClick={goHome} style={{ position: "absolute", top: "20px", left: "20px", background: "rgba(12,11,9,0.6)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.15)", color: "#f0ece4", borderRadius: "50px", padding: "8px 18px", fontSize: "13px", cursor: "pointer", zIndex: 20, display: "flex", alignItems: "center", gap: "6px" }}>
-            &#8592; Nazad
-          </button>
-          {/* Save button */}
-          <button onClick={() => toggleSave(c.id)} style={{ position: "absolute", top: "20px", right: "20px", background: "rgba(12,11,9,0.6)", backdropFilter: "blur(12px)", border: "1px solid " + (savedCafes.includes(c.id) ? "#d4a853" : "rgba(255,255,255,0.15)"), color: savedCafes.includes(c.id) ? "#d4a853" : "#f0ece4", borderRadius: "50%", width: "42px", height: "42px", fontSize: "18px", cursor: "pointer", zIndex: 20 }}>{savedCafes.includes(c.id) ? "♥" : "♡"}</button>
-          {/* Title overlay */}
-          <div style={{ position: "absolute", bottom: "20px", left: "24px", right: "24px", zIndex: 20 }}>
+          <button onClick={goHome} className="btn-hover" style={{ position: "absolute", top: "20px", left: "20px", background: "rgba(12,11,9,0.65)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.18)", color: "#f0ece4", borderRadius: "50px", padding: "8px 18px", fontSize: "13px", cursor: "pointer", zIndex: 20, display: "flex", alignItems: "center", gap: "6px" }}>&#8592; Nazad</button>
+          <button onClick={() => toggleSave(c.id)} className="btn-hover" style={{ position: "absolute", top: "20px", right: "20px", background: "rgba(12,11,9,0.65)", backdropFilter: "blur(16px)", border: "1px solid " + (savedCafes.includes(c.id) ? "#d4a853" : "rgba(255,255,255,0.18)"), color: savedCafes.includes(c.id) ? "#d4a853" : "#f0ece4", borderRadius: "50%", width: "42px", height: "42px", fontSize: "18px", cursor: "pointer", zIndex: 20 }}>{savedCafes.includes(c.id) ? "♥" : "♡"}</button>
+          <div style={{ position: "absolute", bottom: "20px", left: "24px", right: "24px", zIndex: 20 }} className="fade-in-up">
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
-              {c.tags && c.tags.map(t => <span key={t} style={{ background: "rgba(212,168,83,0.2)", border: "1px solid rgba(212,168,83,0.4)", color: "#d4a853", borderRadius: "99px", padding: "3px 10px", fontSize: "11px" }}>{t}</span>)}
+              {c.tags && c.tags.map(t => <span key={t} style={{ background: "rgba(212,168,83,0.22)", border: "1px solid rgba(212,168,83,0.45)", color: "#d4a853", borderRadius: "99px", padding: "3px 10px", fontSize: "11px" }}>{t}</span>)}
             </div>
             <h1 style={{ fontSize: "clamp(28px,8vw,42px)", fontWeight: "400", margin: "0 0 4px", letterSpacing: "-1px", color: "#f0ece4" }}>{c.name}</h1>
             <p style={{ margin: 0, color: "rgba(240,236,228,0.6)", fontSize: "14px" }}>{"📍 " + c.address}</p>
           </div>
         </div>
-
         <div style={{ padding: "20px 24px", maxWidth: "600px", margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "28px", padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol }}>
+          <div className="fade-in-up" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "28px", padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol, backdropFilter: "blur(8px)" }}>
             <div style={{ position: "relative", width: "80px", height: "80px", flexShrink: 0 }}>
               <ScoreRing score={c.score} size={80}/>
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
@@ -571,27 +580,22 @@ export default function App() {
               <span style={{ fontSize: "12px", color: subtleText }}>{c.price_range + " · " + c.hours}</span>
             </div>
           </div>
-
           {c.ratings && (
-            <div style={{ padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol, marginBottom: "20px" }}>
+            <div style={{ padding: "20px", background: cardBg, borderRadius: "20px", border: "1px solid " + borderCol, marginBottom: "20px" }} className="fade-in-up">
               <h3 style={{ margin: "0 0 16px", fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText }}>Ocene po kategorijama</h3>
-              {(Object.keys(safeRatings) as Array<keyof Ratings>).map(k => <RatingBar key={k} label={k} value={safeRatings[k]}/>)}
+              {(Object.keys(safeRatings) as Array<keyof Ratings>).map((k, i) => <RatingBar key={k} label={k} value={safeRatings[k]} delay={i * 0.05}/>)}
             </div>
           )}
-
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
-            <div style={{ padding: "16px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol }}>
-              <p style={{ margin: "0 0 6px", fontSize: "11px", color: "#d4a853", letterSpacing: "1px", textTransform: "uppercase" }}>Sta probati</p>
-              <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.4 }}>{c.must_try}</p>
-            </div>
-            <div style={{ padding: "16px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol }}>
-              <p style={{ margin: "0 0 6px", fontSize: "11px", color: "#d4a853", letterSpacing: "1px", textTransform: "uppercase" }}>Najbolje vreme</p>
-              <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.4 }}>{c.best_time}</p>
-            </div>
+            {[{ label: "Sta probati", val: c.must_try }, { label: "Najbolje vreme", val: c.best_time }].map((item, i) => (
+              <div key={item.label} className="card-hover fade-in-up" style={{ padding: "16px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, animationDelay: (i * 0.1) + "s" }}>
+                <p style={{ margin: "0 0 6px", fontSize: "11px", color: "#d4a853", letterSpacing: "1px", textTransform: "uppercase" }}>{item.label}</p>
+                <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.4 }}>{item.val}</p>
+              </div>
+            ))}
           </div>
-
           {c.instagram ? (
-            <a href={"https://instagram.com/" + c.instagram.replace("@","")} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(135deg,rgba(212,168,83,0.12),rgba(212,168,83,0.04))", borderRadius: "16px", border: "1px solid rgba(212,168,83,0.25)", textDecoration: "none", marginBottom: "12px" }}>
+            <a href={"https://instagram.com/" + c.instagram.replace("@","")} target="_blank" rel="noreferrer" className="card-hover" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(135deg,rgba(212,168,83,0.12),rgba(212,168,83,0.04))", borderRadius: "16px", border: "1px solid rgba(212,168,83,0.28)", textDecoration: "none", marginBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <span style={{ fontSize: "22px" }}>📸</span>
                 <div><p style={{ margin: "0 0 2px", fontSize: "12px", color: subtleText }}>Instagram</p><p style={{ margin: 0, color: "#d4a853", fontSize: "14px", fontWeight: "600" }}>{c.instagram}</p></div>
@@ -603,21 +607,18 @@ export default function App() {
               <span style={{ fontSize: "22px" }}>📸</span><p style={{ margin: 0, fontSize: "13px", color: subtleText }}>Nema Instagram profila</p>
             </div>
           )}
-
-          <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textDecoration: "none", color: "inherit", marginBottom: "24px" }}>
+          <a href={"https://www.google.com/maps/search/" + encodeURIComponent(c.name + " " + c.address + " Cacak")} target="_blank" rel="noreferrer" className="card-hover" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: cardBg, borderRadius: "16px", border: "1px solid " + borderCol, textDecoration: "none", color: "inherit", marginBottom: "24px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <span style={{ fontSize: "22px" }}>🗺️</span>
               <div><p style={{ margin: "0 0 2px", fontSize: "12px", color: subtleText }}>Lokacija</p><p style={{ margin: 0, fontSize: "14px", fontWeight: "600" }}>{c.address}</p></div>
             </div>
             <span style={{ color: "#d4a853", fontSize: "18px" }}>→</span>
           </a>
-
           <CommentsSection cafeId={c.id} darkMode={darkMode}/>
-
           <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, margin: "24px 0 12px" }}>Slicni lokali</h3>
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
-            {cafes.filter(x => x.id !== c.id).slice(0,3).map(sim => (
-              <button key={sim.id} onClick={() => goToDetail(sim)} style={{ flexShrink: 0, width: "140px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit" }}>
+            {cafes.filter(x => x.id !== c.id).slice(0,3).map((sim, i) => (
+              <button key={sim.id} onClick={() => goToDetail(sim)} className="card-hover" style={{ flexShrink: 0, width: "140px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", animation: "fadeInUp 0.4s " + (i * 0.1) + "s both" }}>
                 <img src={sim.image} alt={sim.name} style={{ width: "100%", height: "80px", objectFit: "cover" }}/>
                 <div style={{ padding: "10px" }}><p style={{ margin: "0 0 2px", fontSize: "13px", fontWeight: "600" }}>{sim.name}</p><p style={{ margin: 0, fontSize: "12px", color: "#d4a853" }}>{sim.score}/10</p></div>
               </button>
@@ -630,62 +631,86 @@ export default function App() {
 
   // ── HOME PAGE ─────────────────────────────────────────────────
   return (
-    <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
+    <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif", overflowX: "hidden", opacity: pageTransition ? 0 : 1, transition: "opacity 0.2s" }}>
+      <style>{globalStyles}</style>
+
+      {showWelcome && <WelcomeModal onClose={handleWelcomeClose} darkMode={darkMode}/>}
+
       {adminPrompt && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(10px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-          <div style={{ background: darkMode ? "#1a1510" : "#fff", border: "1px solid " + borderCol, borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "320px" }}>
+        <div style={{ position: "fixed", inset: 0, backdropFilter: "blur(12px)", background: "rgba(0,0,0,0.75)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }} className="fade-in">
+          <div className="scale-in" style={{ background: darkMode ? "#1a1510" : "#fff", border: "1px solid " + borderCol, borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "320px", boxShadow: "0 24px 60px rgba(0,0,0,0.4)" }}>
             <h3 style={{ margin: "0 0 20px", fontSize: "20px", fontWeight: "400" }}>Admin pristup</h3>
-            <input type="password" placeholder="Lozinka..." value={adminPass} onChange={e => { setAdminPass(e.target.value); setAdminError(false); }} onKeyDown={e => e.key === "Enter" && handleAdminLogin()} style={{ width: "100%", padding: "14px 16px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + (adminError ? "#ff6060" : borderCol), borderRadius: "12px", color: "inherit", fontSize: "15px", outline: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: "8px" }}/>
-            {adminError && <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#ff6060" }}>Pogresna lozinka</p>}
+            <input type="password" placeholder="Lozinka..." value={adminPass} onChange={e => { setAdminPass(e.target.value); setAdminError(false); }} onKeyDown={e => e.key === "Enter" && handleAdminLogin()} style={{ width: "100%", padding: "14px 16px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + (adminError ? "#ff6060" : borderCol), borderRadius: "12px", color: "inherit", fontSize: "15px", outline: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: "8px", transition: "border-color 0.2s" }}
+              onFocus={e => e.target.style.borderColor = adminError ? "#ff6060" : "#d4a853"} onBlur={e => e.target.style.borderColor = adminError ? "#ff6060" : borderCol}/>
+            {adminError && <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#ff6060", animation: "fadeInUp 0.3s both" }}>Pogresna lozinka</p>}
             <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-              <button onClick={() => { setAdminPrompt(false); setAdminPass(""); setAdminError(false); }} style={{ flex: 1, padding: "12px", background: cardBg, border: "1px solid " + borderCol, color: "inherit", borderRadius: "12px", cursor: "pointer", fontFamily: "inherit" }}>Odustani</button>
-              <button onClick={handleAdminLogin} style={{ flex: 1, padding: "12px", background: "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "12px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Ulaz</button>
+              <button onClick={() => { setAdminPrompt(false); setAdminPass(""); setAdminError(false); }} className="btn-hover" style={{ flex: 1, padding: "12px", background: cardBg, border: "1px solid " + borderCol, color: "inherit", borderRadius: "12px", cursor: "pointer", fontFamily: "inherit" }}>Odustani</button>
+              <button onClick={handleAdminLogin} className="btn-hover" style={{ flex: 1, padding: "12px", background: "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "12px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Ulaz</button>
             </div>
           </div>
         </div>
       )}
 
-      <nav style={{ position: "fixed", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 100, backdropFilter: "blur(20px)", background: darkMode ? "rgba(12,11,9,0.8)" : "rgba(247,243,238,0.85)", border: "1px solid " + borderCol, borderRadius: "99px", padding: "10px 20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.3)", width: "calc(100% - 48px)", maxWidth: "560px", boxSizing: "border-box" }}>
-        <span style={{ fontSize: "18px", cursor: "pointer", userSelect: "none" }} onDoubleClick={() => setAdminPrompt(true)}>☕</span>
+      {/* Floating Navbar */}
+      <nav style={{ position: "fixed", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 100, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", background: darkMode ? "rgba(12,11,9,0.82)" : "rgba(247,243,238,0.88)", border: "1px solid " + borderCol, borderRadius: "99px", padding: "10px 20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,168,83,0.06)", width: "calc(100% - 48px)", maxWidth: "560px", boxSizing: "border-box", animation: "fadeInUp 0.6s both" }}>
+        <span style={{ fontSize: "18px", cursor: "pointer", userSelect: "none", transition: "transform 0.2s" }} onDoubleClick={() => setAdminPrompt(true)} onMouseEnter={e => (e.currentTarget.style.transform="scale(1.2) rotate(-10deg)")} onMouseLeave={e => (e.currentTarget.style.transform="")}>☕</span>
         <span style={{ flex: 1, fontWeight: "600", fontSize: "13px", letterSpacing: "-0.3px" }}>Ocenjivanje Kafića Čačak</span>
-        <button onClick={() => setShowMap(!showMap)} style={{ background: "none", border: "none", color: showMap ? "#d4a853" : subtleText, cursor: "pointer", fontSize: "18px" }}>📍</button>
-        <button onClick={() => setDarkMode(!darkMode)} style={{ background: "none", border: "none", color: subtleText, cursor: "pointer", fontSize: "16px" }}>{darkMode ? "☀️" : "🌙"}</button>
-        <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" style={{ background: "linear-gradient(135deg,#d4a853,#8a6a3a)", borderRadius: "99px", padding: "6px 14px", fontSize: "12px", color: "#fff", textDecoration: "none", fontWeight: "600" }}>IG</a>
+        <button onClick={() => setShowMap(!showMap)} className="btn-hover" style={{ background: showMap ? "rgba(212,168,83,0.15)" : "none", border: showMap ? "1px solid rgba(212,168,83,0.3)" : "none", color: showMap ? "#d4a853" : subtleText, cursor: "pointer", fontSize: "18px", borderRadius: "8px", padding: "4px 6px", transition: "all 0.2s" }}>📍</button>
+        <button onClick={() => setDarkMode(!darkMode)} className="btn-hover" style={{ background: "none", border: "none", color: subtleText, cursor: "pointer", fontSize: "16px", transition: "transform 0.3s" }} onMouseEnter={e => (e.currentTarget.style.transform="rotate(20deg)")} onMouseLeave={e => (e.currentTarget.style.transform="")}>{darkMode ? "☀️" : "🌙"}</button>
+        <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" className="btn-hover" style={{ background: "linear-gradient(135deg,#d4a853,#8a6a3a)", borderRadius: "99px", padding: "6px 14px", fontSize: "12px", color: "#fff", textDecoration: "none", fontWeight: "600" }}>IG</a>
       </nav>
 
+      {/* Hero */}
       <div style={{ position: "relative", minHeight: "100svh", display: "flex", flexDirection: "column", justifyContent: "flex-end", paddingBottom: "60px", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: darkMode ? "radial-gradient(ellipse at 70% 20%, rgba(138,105,58,0.25) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(212,168,83,0.12) 0%, transparent 50%), #0c0b09" : "radial-gradient(ellipse at 70% 20%, rgba(212,168,83,0.3) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(138,105,58,0.15) 0%, transparent 50%), #f7f3ee" }}/>
+        <div style={{ position: "absolute", inset: 0, background: darkMode ? "radial-gradient(ellipse at 70% 20%, rgba(138,105,58,0.28) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(212,168,83,0.14) 0%, transparent 50%), #0c0b09" : "radial-gradient(ellipse at 70% 20%, rgba(212,168,83,0.32) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(138,105,58,0.18) 0%, transparent 50%), #f7f3ee" }}/>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(" + (darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)") + " 1px,transparent 1px),linear-gradient(90deg," + (darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)") + " 1px,transparent 1px)", backgroundSize: "40px 40px" }}/>
-        <div style={{ position: "absolute", top: "15%", right: "10%", width: "200px", height: "200px", background: "radial-gradient(circle, rgba(212,168,83,0.15) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(30px)" }}/>
+        {/* Animated orbs */}
+        <div style={{ position: "absolute", top: "15%", right: "10%", width: "220px", height: "220px", background: "radial-gradient(circle, rgba(212,168,83,0.18) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(35px)", animation: "floatUp 6s ease-in-out infinite" }}/>
+        <div style={{ position: "absolute", bottom: "25%", left: "-5%", width: "270px", height: "270px", background: "radial-gradient(circle, rgba(138,105,58,0.12) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(45px)", animation: "floatUp 8s ease-in-out infinite 2s" }}/>
+        <div style={{ position: "absolute", top: "50%", right: "30%", width: "120px", height: "120px", background: "radial-gradient(circle, rgba(212,168,83,0.08) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(20px)", animation: "floatUp 5s ease-in-out infinite 1s" }}/>
+
         <div style={{ position: "relative", padding: "0 24px", paddingTop: "100px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.3)", borderRadius: "99px", padding: "6px 14px", fontSize: "11px", color: "#d4a853", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "20px" }}>
-            Čačak Coffee Guide
+          <div className="fade-in-up" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.32)", borderRadius: "99px", padding: "6px 14px", fontSize: "11px", color: "#d4a853", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "20px" }}>
+            ✦ Čačak Coffee Guide
           </div>
-          <h1 style={{ fontSize: "clamp(36px,11vw,72px)", fontWeight: "400", lineHeight: 1.05, letterSpacing: "-2px", margin: "0 0 12px", maxWidth: "480px" }}>
+          <h1 className="fade-in-up" style={{ fontSize: "clamp(36px,11vw,72px)", fontWeight: "400", lineHeight: 1.05, letterSpacing: "-2px", margin: "0 0 12px", maxWidth: "480px", animationDelay: "0.1s" }}>
             Najbolji<br/>
             <span style={{ background: "linear-gradient(135deg,#d4a853,#f0d090,#8a6a3a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>coffee guide</span><br/>
             u Cacku!
           </h1>
-          <p style={{ color: subtleText, fontSize: "15px", lineHeight: 1.6, margin: "0 0 24px", maxWidth: "340px" }}>Autenticne recenzije kafića, brunch mesta i lokacija koje vredi posetiti u Čačku.</p>
-          <HeroCarousel cafes={cafes} darkMode={darkMode}/>
-          <div style={{ position: "relative", marginBottom: "20px", maxWidth: "480px" }}>
+          <p className="fade-in-up" style={{ color: subtleText, fontSize: "15px", lineHeight: 1.6, margin: "0 0 24px", maxWidth: "340px", animationDelay: "0.2s" }}>Autenticne recenzije kafića, brunch mesta i lokacija koje vredi posetiti u Čačku.</p>
+
+          <div className="fade-in-up" style={{ animationDelay: "0.25s" }}>
+            <HeroCarousel cafes={cafes} darkMode={darkMode}/>
+          </div>
+
+          <div className="fade-in-up" style={{ position: "relative", marginBottom: "20px", maxWidth: "480px", animationDelay: "0.3s" }}>
             <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", color: subtleText }}>🔍</span>
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Traži kafić..." style={{ width: "100%", padding: "16px 16px 16px 46px", background: darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "16px", color: "inherit", fontSize: "15px", outline: "none", backdropFilter: "blur(10px)", boxSizing: "border-box", fontFamily: "inherit" }}/>
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Traži kafić..." style={{ width: "100%", padding: "16px 16px 16px 46px", background: darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "16px", color: "inherit", fontSize: "15px", outline: "none", backdropFilter: "blur(12px)", boxSizing: "border-box", fontFamily: "inherit", transition: "border-color 0.2s, box-shadow 0.2s" }}
+              onFocus={e => { e.target.style.borderColor="#d4a853"; e.target.style.boxShadow="0 0 0 3px rgba(212,168,83,0.1)"; }}
+              onBlur={e => { e.target.style.borderColor=borderCol; e.target.style.boxShadow="none"; }}
+            />
           </div>
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <button onClick={() => document.getElementById("lokali")?.scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", border: "none", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Istražiti lokale</button>
-            <button onClick={() => setShowMap(!showMap)} style={{ background: darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.05)", border: "1px solid " + (showMap?"#d4a853":borderCol), color: showMap?"#d4a853":"inherit", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", cursor: "pointer", fontFamily: "inherit" }}>Lokacije</button>
+
+          <div className="fade-in-up" style={{ display: "flex", gap: "12px", flexWrap: "wrap", animationDelay: "0.35s" }}>
+            <button onClick={() => document.getElementById("lokali")?.scrollIntoView({ behavior: "smooth" })} className="btn-hover" style={{ background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", border: "none", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Istražiti lokale</button>
+            <button onClick={() => setShowMap(!showMap)} className="btn-hover" style={{ background: darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.05)", border: "1px solid " + (showMap?"#d4a853":borderCol), color: showMap?"#d4a853":"inherit", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", cursor: "pointer", fontFamily: "inherit", backdropFilter: "blur(8px)", transition: "all 0.2s" }}>Lokacije</button>
           </div>
-          <div style={{ display: "flex", gap: "28px", marginTop: "40px" }}>
+
+          <div className="fade-in-up" style={{ display: "flex", gap: "28px", marginTop: "40px", animationDelay: "0.4s" }}>
             {[[String(cafes.length), "Lokala"], ["100+", "Recenzija"], ["7.7", "Rating"]].map(([n, l]) => (
-              <div key={l}><p style={{ margin: "0 0 2px", fontSize: "22px", fontWeight: "700", color: "#d4a853", letterSpacing: "-1px" }}>{n}</p><p style={{ margin: 0, fontSize: "11px", color: subtleText, letterSpacing: "1px", textTransform: "uppercase" }}>{l}</p></div>
+              <div key={l} style={{ transition: "transform 0.2s" }} onMouseEnter={e => (e.currentTarget.style.transform="translateY(-2px)")} onMouseLeave={e => (e.currentTarget.style.transform="")}>
+                <p style={{ margin: "0 0 2px", fontSize: "22px", fontWeight: "700", color: "#d4a853", letterSpacing: "-1px" }}>{n}</p>
+                <p style={{ margin: 0, fontSize: "11px", color: subtleText, letterSpacing: "1px", textTransform: "uppercase" }}>{l}</p>
+              </div>
             ))}
           </div>
         </div>
       </div>
 
+      {/* Location section */}
       {showMap && (
-        <div style={{ padding: "0 24px 32px" }}>
+        <div style={{ padding: "0 24px 32px" }} className="fade-in-up">
           <div style={{ marginBottom: "16px" }}>
             <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "400" }}>Svi lokali u Čačku</h2>
             <p style={{ margin: "4px 0 0", fontSize: "13px", color: subtleText }}>Klikni Maps za navigaciju</p>
@@ -694,22 +719,25 @@ export default function App() {
         </div>
       )}
 
-      <div style={{ position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(20px)", background: darkMode?"rgba(12,11,9,0.9)":"rgba(247,243,238,0.9)", borderBottom: "1px solid " + borderCol, padding: "0 24px" }}>
-        <div style={{ display: "flex", gap: "8px", overflowX: "auto", padding: "14px 0", scrollbarWidth: "none" }}>
+      {/* Sticky filters */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", background: darkMode?"rgba(12,11,9,0.88)":"rgba(247,243,238,0.92)", borderBottom: "1px solid " + borderCol, padding: "0 24px" }}>
+        <div style={{ display: "flex", gap: "8px", overflowX: "auto", padding: "14px 0" }}>
           {filters.map(f => (
-            <button key={f} onClick={() => setActiveFilter(f)} style={{ flexShrink: 0, padding: "8px 16px", background: activeFilter===f?"linear-gradient(135deg,#d4a853,#b8893a)":cardBg, border: "1px solid " + (activeFilter===f?"transparent":borderCol), color: activeFilter===f?"#0c0b09":"inherit", borderRadius: "99px", fontSize: "13px", cursor: "pointer", fontWeight: activeFilter===f?"700":"400", fontFamily: "inherit", whiteSpace: "nowrap" }}>{f}</button>
+            <button key={f} onClick={() => setActiveFilter(f)} className="btn-hover" style={{ flexShrink: 0, padding: "8px 16px", background: activeFilter===f?"linear-gradient(135deg,#d4a853,#b8893a)":cardBg, border: "1px solid " + (activeFilter===f?"transparent":borderCol), color: activeFilter===f?"#0c0b09":"inherit", borderRadius: "99px", fontSize: "13px", cursor: "pointer", fontWeight: activeFilter===f?"700":"400", fontFamily: "inherit", whiteSpace: "nowrap", transition: "all 0.2s" }}>{f}</button>
           ))}
         </div>
       </div>
 
+      {/* Top banner */}
       {sorted.length > 0 && (
-        <div style={{ margin: "32px 24px 0", padding: "20px", background: "linear-gradient(135deg,rgba(212,168,83,0.12),rgba(138,105,58,0.06))", border: "1px solid rgba(212,168,83,0.2)", borderRadius: "20px" }}>
-          <p style={{ margin: "0 0 4px", fontSize: "11px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase" }}>Ovog meseca</p>
+        <div className="fade-in-up" style={{ margin: "32px 24px 0", padding: "20px", background: "linear-gradient(135deg,rgba(212,168,83,0.13),rgba(138,105,58,0.07))", border: "1px solid rgba(212,168,83,0.22)", borderRadius: "20px" }}>
+          <p style={{ margin: "0 0 4px", fontSize: "11px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase" }}>✦ Ovog meseca</p>
           <p style={{ margin: "0 0 12px", fontSize: "18px", fontWeight: "600" }}>Top ocenjeni: <span style={{ color: "#d4a853" }}>{sorted[0].name + " " + sorted[0].score + "/10"}</span></p>
-          <button onClick={() => goToDetail(sorted[0])} style={{ background: "rgba(212,168,83,0.15)", border: "1px solid rgba(212,168,83,0.3)", color: "#d4a853", borderRadius: "99px", padding: "7px 16px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>Pogledaj recenziju</button>
+          <button onClick={() => goToDetail(sorted[0])} className="btn-hover" style={{ background: "rgba(212,168,83,0.15)", border: "1px solid rgba(212,168,83,0.32)", color: "#d4a853", borderRadius: "99px", padding: "7px 16px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>Pogledaj recenziju</button>
         </div>
       )}
 
+      {/* Cafes list */}
       <div id="lokali" style={{ padding: "32px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "20px" }}>
           <h2 style={{ margin: 0, fontSize: "22px", fontWeight: "400", letterSpacing: "-0.5px" }}>Svi lokali</h2>
@@ -717,25 +745,25 @@ export default function App() {
         </div>
         {loading ? (
           <div style={{ textAlign: "center", padding: "60px 0", color: subtleText }}>
-            <p style={{ fontSize: "32px", margin: "0 0 12px" }}>☕</p>
-            <p style={{ fontSize: "14px" }}>Ucitavam lokale...</p>
+            <p style={{ fontSize: "32px", margin: "0 0 12px", animation: "floatUp 2s ease-in-out infinite" }}>☕</p>
+            <p style={{ fontSize: "14px", animation: "pulse 1.5s ease-in-out infinite" }}>Ucitavam lokale...</p>
           </div>
         ) : sorted.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: subtleText }}>
+          <div style={{ textAlign: "center", padding: "60px 0", color: subtleText }} className="fade-in">
             <p style={{ fontSize: "32px", margin: "0 0 12px" }}>🔍</p>
             <p style={{ fontSize: "14px" }}>Nema rezultata.</p>
           </div>
         ) : (
           <div style={{ display: "grid", gap: "16px" }}>
             {sorted.map((c, i) => (
-              <button key={c.id} onClick={() => goToDetail(c)} style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "20px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", display: "grid", gridTemplateColumns: "130px 1fr", minHeight: "140px", transition: "transform 0.2s, box-shadow 0.2s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow=darkMode?"0 12px 40px rgba(212,168,83,0.12)":"0 12px 40px rgba(0,0,0,0.1)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform=""; (e.currentTarget as HTMLButtonElement).style.boxShadow=""; }}
+              <button key={c.id} onClick={() => goToDetail(c)} className="card-hover" style={{ background: cardBg, border: "1px solid " + borderCol, borderRadius: "20px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", display: "grid", gridTemplateColumns: "130px 1fr", minHeight: "140px", animation: "fadeInUp 0.5s " + (i * 0.06) + "s both" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(212,168,83,0.3)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = borderCol; }}
               >
                 <div style={{ position: "relative", overflow: "hidden" }}>
-                  <img src={c.image} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover" }}/>
-                  {i===0 && <div style={{ position: "absolute", top: "8px", left: "8px", background: "#d4a853", color: "#0c0b09", borderRadius: "99px", padding: "3px 8px", fontSize: "10px", fontWeight: "800" }}>TOP</div>}
-                  <button onClick={e => { e.stopPropagation(); toggleSave(c.id); }} style={{ position: "absolute", bottom: "8px", right: "8px", background: "rgba(12,11,9,0.6)", border: "none", color: savedCafes.includes(c.id)?"#d4a853":"#fff", borderRadius: "50%", width: "28px", height: "28px", fontSize: "13px", cursor: "pointer" }}>{savedCafes.includes(c.id)?"♥":"♡"}</button>
+                  <img src={c.image} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }} onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")} onMouseLeave={e => (e.currentTarget.style.transform="")}/>
+                  {i===0 && <div style={{ position: "absolute", top: "8px", left: "8px", background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", borderRadius: "99px", padding: "3px 8px", fontSize: "10px", fontWeight: "800" }}>TOP</div>}
+                  <button onClick={e => { e.stopPropagation(); toggleSave(c.id); }} style={{ position: "absolute", bottom: "8px", right: "8px", background: "rgba(12,11,9,0.65)", backdropFilter: "blur(8px)", border: "none", color: savedCafes.includes(c.id)?"#d4a853":"#fff", borderRadius: "50%", width: "28px", height: "28px", fontSize: "13px", cursor: "pointer", transition: "transform 0.2s" }} onMouseEnter={e => (e.currentTarget.style.transform="scale(1.15)")} onMouseLeave={e => (e.currentTarget.style.transform="")}>{savedCafes.includes(c.id)?"♥":"♡"}</button>
                 </div>
                 <div style={{ padding: "16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
@@ -747,7 +775,7 @@ export default function App() {
                   </div>
                   <p style={{ margin: "0 0 8px", fontSize: "12px", color: subtleText }}>{"📍 " + c.address}</p>
                   <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", marginBottom: "8px" }}>
-                    {c.tags && c.tags.slice(0,2).map(t => <span key={t} style={{ background: "rgba(212,168,83,0.1)", border: "1px solid rgba(212,168,83,0.2)", color: "#d4a853", borderRadius: "99px", padding: "2px 8px", fontSize: "10px" }}>{t}</span>)}
+                    {c.tags && c.tags.slice(0,2).map(t => <span key={t} style={{ background: "rgba(212,168,83,0.1)", border: "1px solid rgba(212,168,83,0.22)", color: "#d4a853", borderRadius: "99px", padding: "2px 8px", fontSize: "10px" }}>{t}</span>)}
                   </div>
                   <p style={{ margin: 0, fontSize: "12px", color: subtleText, lineHeight: 1.4 }}>{c.description ? c.description.slice(0,70) + "..." : ""}</p>
                 </div>
@@ -757,14 +785,15 @@ export default function App() {
         )}
       </div>
 
+      {/* Hidden gems */}
       {cafes.filter(c => c.score >= 8).length > 0 && (
-        <div style={{ margin: "0 24px 32px", padding: "24px", background: darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)", border: "1px solid " + borderCol, borderRadius: "24px" }}>
-          <p style={{ margin: "0 0 4px", fontSize: "11px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase" }}>Hidden gems</p>
+        <div className="fade-in-up" style={{ margin: "0 24px 32px", padding: "24px", background: darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)", border: "1px solid " + borderCol, borderRadius: "24px" }}>
+          <p style={{ margin: "0 0 4px", fontSize: "11px", color: "#d4a853", letterSpacing: "2px", textTransform: "uppercase" }}>💎 Hidden gems</p>
           <h3 style={{ margin: "0 0 16px", fontSize: "20px", fontWeight: "400" }}>Mesta koja vredi otkriti</h3>
-          <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px", scrollbarWidth: "none" }}>
-            {cafes.filter(c => c.score >= 8).map(c => (
-              <button key={c.id} onClick={() => goToDetail(c)} style={{ flexShrink: 0, width: "160px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit" }}>
-                <img src={c.image} alt={c.name} style={{ width: "100%", height: "100px", objectFit: "cover" }}/>
+          <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
+            {cafes.filter(c => c.score >= 8).map((c, i) => (
+              <button key={c.id} onClick={() => goToDetail(c)} className="card-hover" style={{ flexShrink: 0, width: "160px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", animation: "fadeInUp 0.4s " + (i * 0.08) + "s both" }}>
+                <img src={c.image} alt={c.name} style={{ width: "100%", height: "100px", objectFit: "cover", transition: "transform 0.4s" }} onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")} onMouseLeave={e => (e.currentTarget.style.transform="")}/>
                 <div style={{ padding: "10px 12px" }}>
                   <p style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: "600" }}>{c.name}</p>
                   <p style={{ margin: "0 0 4px", fontSize: "11px", color: subtleText }}>{c.address}</p>
@@ -776,11 +805,12 @@ export default function App() {
         </div>
       )}
 
-      <div style={{ margin: "0 24px 32px", padding: "28px 24px", background: "linear-gradient(135deg,rgba(212,168,83,0.15),rgba(138,105,58,0.08))", border: "1px solid rgba(212,168,83,0.25)", borderRadius: "24px", textAlign: "center" }}>
-        <p style={{ margin: "0 0 8px", fontSize: "32px" }}>📸</p>
+      {/* Instagram CTA */}
+      <div className="fade-in-up" style={{ margin: "0 24px 32px", padding: "28px 24px", background: "linear-gradient(135deg,rgba(212,168,83,0.15),rgba(138,105,58,0.08))", border: "1px solid rgba(212,168,83,0.26)", borderRadius: "24px", textAlign: "center" }}>
+        <p style={{ margin: "0 0 8px", fontSize: "32px", animation: "floatUp 3s ease-in-out infinite" }}>📸</p>
         <h3 style={{ margin: "0 0 8px", fontSize: "20px", fontWeight: "400" }}>Prati nas na Instagramu</h3>
         <p style={{ margin: "0 0 20px", color: subtleText, fontSize: "14px" }}>Svakodnevne recenzije i priče iz kafića Čačka.</p>
-        <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" style={{ display: "inline-block", background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", borderRadius: "14px", padding: "13px 28px", fontSize: "14px", fontWeight: "700", textDecoration: "none" }}>@ocenjivanje.kafica.cacak</a>
+        <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" className="btn-hover" style={{ display: "inline-block", background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", borderRadius: "14px", padding: "13px 28px", fontSize: "14px", fontWeight: "700", textDecoration: "none" }}>@ocenjivanje.kafica.cacak</a>
       </div>
 
       <footer style={{ padding: "24px", borderTop: "1px solid " + borderCol, textAlign: "center" }}>
