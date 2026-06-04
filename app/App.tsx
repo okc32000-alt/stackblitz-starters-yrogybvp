@@ -1,12 +1,12 @@
 "use client";
 /* eslint-disable */
 import { useState, useEffect, useRef } from "react";
-
+ 
 const SUPABASE_URL = "https://tubmkeowugsrngspckyk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1Ym1rZW93dWdzcm5nc3Bja3lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzY0NTMsImV4cCI6MjA5NTY1MjQ1M30.V759F71RtxDtTFd7qS_RXShbbuFzVxI8AgNMJ9SJZPg";
 const ADMIN_PASSWORD = "okc2026";
 const hdrs = { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY };
-
+ 
 async function dbGet(table: string, params = "") {
   try {
     const res = await fetch(SUPABASE_URL + "/rest/v1/" + table + "?" + params, { headers: hdrs });
@@ -26,7 +26,7 @@ async function dbUpdate(table: string, id: number, data: object) {
 async function dbDelete(table: string, id: number) {
   try { await fetch(SUPABASE_URL + "/rest/v1/" + table + "?id=eq." + id, { method: "DELETE", headers: hdrs }); } catch {}
 }
-
+ 
 type Ratings = { kafa: number; ambijent: number; usluga: number; cena: number; internet: number; muzika: number; };
 type Cafe = {
   id: number; name: string; address: string; score: number;
@@ -41,7 +41,7 @@ type FormState = {
   image: string; gallery1: string; gallery2: string; gallery3: string;
   category: string[]; tags: string[]; ratings: Ratings;
 };
-
+ 
 const defaultRatings: Ratings = { kafa: 7.0, ambijent: 7.0, usluga: 7.0, cena: 7.0, internet: 7.0, muzika: 7.0 };
 const emptyForm: FormState = {
   name: "", address: "", score: 7.0, hours: "", instagram: "", description: "",
@@ -52,7 +52,7 @@ const emptyForm: FormState = {
 const filters = ["Sve", "kafa", "brunch", "desert", "date place", "work friendly", "nightlife", "shopping"];
 const ALL_CATS = ["kafa","brunch","desert","date place","work friendly","nightlife","shopping"];
 const ALL_TAGS = ["cozy","minimal","luxury","aesthetic","study spot","chill","sport","neighborhood","classic","quick stop"];
-
+ 
 // ── GLOBAL STYLES ─────────────────────────────────────────────────
 const globalStyles = `
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
@@ -77,23 +77,23 @@ const globalStyles = `
   * { -webkit-tap-highlight-color: transparent; }
   ::-webkit-scrollbar { display: none; }
 `;
-
+ 
 // ── SWIPEABLE GALLERY ─────────────────────────────────────────────
 const SwipeableGallery = ({ images, darkMode }: { images: string[]; darkMode: boolean }) => {
   const [idx, setIdx] = useState(0);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
-
+ 
   const prev = () => setIdx(i => (i - 1 + images.length) % images.length);
   const next = () => setIdx(i => (i + 1) % images.length);
-
+ 
   const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const onTouchMove = (e: React.TouchEvent) => { touchEndX.current = e.touches[0].clientX; };
   const onTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
     if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
   };
-
+ 
   return (
     <div style={{ position: "relative", height: "55vh", overflow: "hidden", userSelect: "none" }}
       onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
@@ -113,7 +113,7 @@ const SwipeableGallery = ({ images, darkMode }: { images: string[]; darkMode: bo
     </div>
   );
 };
-
+ 
 // ── ADMIN FIELD ───────────────────────────────────────────────────
 const AdminField = ({ label, field, value, onChange, type = "text", placeholder = "", darkMode, borderCol }: {
   label: string; field: string; value: string | number;
@@ -130,7 +130,7 @@ const AdminField = ({ label, field, value, onChange, type = "text", placeholder 
     />
   </div>
 );
-
+ 
 // ── SCORE RING ────────────────────────────────────────────────────
 const ScoreRing = ({ score, size = 80 }: { score: number; size?: number }) => {
   const r = size / 2 - 6; const circ = 2 * Math.PI * r; const pct = (score / 10) * circ;
@@ -142,7 +142,7 @@ const ScoreRing = ({ score, size = 80 }: { score: number; size?: number }) => {
     </svg>
   );
 };
-
+ 
 // ── RATING BAR ────────────────────────────────────────────────────
 const RatingBar = ({ label, value, delay = 0 }: { label: string; value: number; delay?: number }) => (
   <div style={{ marginBottom: "10px", animation: "fadeInUp 0.5s " + delay + "s both" }}>
@@ -155,7 +155,7 @@ const RatingBar = ({ label, value, delay = 0 }: { label: string; value: number; 
     </div>
   </div>
 );
-
+ 
 // ── HERO CAROUSEL ─────────────────────────────────────────────────
 const HeroCarousel = ({ cafes, darkMode }: { cafes: Cafe[]; darkMode: boolean }) => {
   const [idx, setIdx] = useState(0);
@@ -183,7 +183,7 @@ const HeroCarousel = ({ cafes, darkMode }: { cafes: Cafe[]; darkMode: boolean })
     </div>
   );
 };
-
+ 
 // ── WELCOME MODAL ─────────────────────────────────────────────────
 const WelcomeModal = ({ onClose, darkMode }: { onClose: () => void; darkMode: boolean }) => {
   const [visible, setVisible] = useState(false);
@@ -207,7 +207,7 @@ const WelcomeModal = ({ onClose, darkMode }: { onClose: () => void; darkMode: bo
           Dobrodošli u<br/><span style={{ background: "linear-gradient(135deg,#d4a853,#f0d090,#8a6a3a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: "600" }}>vodič kafića</span>
         </h2>
         <p style={{ margin: "0 0 24px", fontSize: "14px", lineHeight: 1.7, color: darkMode ? "#6b6055" : "#9a8878" }}>
-          Pogledajte kafiće koje smo mi ocenili, pronađite savršeno mesto za vas i ostavite vaš komentar!
+          Pogledajte kafice koje smo mi ocenili, pronađite savršeno mesto za vas i ostavite vaš komentar!
         </p>
         {/* Stats row */}
         <div style={{ display: "flex", justifyContent: "center", gap: "24px", marginBottom: "28px", padding: "16px", background: darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", borderRadius: "16px", border: darkMode ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.06)" }}>
@@ -219,14 +219,14 @@ const WelcomeModal = ({ onClose, darkMode }: { onClose: () => void; darkMode: bo
           ))}
         </div>
         <button onClick={handleClose} className="btn-hover" style={{ width: "100%", padding: "15px", background: "linear-gradient(135deg,#d4a853,#b8893a)", border: "none", color: "#0c0b09", borderRadius: "14px", fontSize: "16px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit", letterSpacing: "-0.3px" }}>
-          Istraži kafiće ✦
+          Istraži kafice ✦
         </button>
         <p style={{ margin: "12px 0 0", fontSize: "11px", color: darkMode ? "#4a3828" : "#c8b89a" }}>Klikni bilo gde da zatvoriš</p>
       </div>
     </div>
   );
 };
-
+ 
 // ── LOCATION LIST ─────────────────────────────────────────────────
 const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: (c: Cafe) => void; darkMode: boolean }) => {
   const cardBg = darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
@@ -259,7 +259,7 @@ const LocationList = ({ cafes, onSelect, darkMode }: { cafes: Cafe[]; onSelect: 
     </div>
   );
 };
-
+ 
 // ── ADMIN PANEL ───────────────────────────────────────────────────
 const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; onClose: () => void; onRefresh: () => void; darkMode: boolean }) => {
   const [tab, setTab] = useState<"list" | "add">("list");
@@ -267,14 +267,14 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-
+ 
   const bg = darkMode ? { background: "#0c0b09", color: "#f0ece4" } : { background: "#f7f3ee", color: "#1a1510" };
   const cardBg = darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
   const borderCol = darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
   const subtleText = darkMode ? "#6b6055" : "#9a8878";
   const lbl: React.CSSProperties = { fontSize: "11px", color: subtleText, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: "6px", display: "block" };
   const inp: React.CSSProperties = { width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
-
+ 
   const setField = (field: string, val: string | number) => setForm(f => ({ ...f, [field]: val }));
   const handleSave = async () => {
     if (!form.name || !form.address || !form.image) { alert("Popuni naziv, adresu i sliku!"); return; }
@@ -299,7 +299,7 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
   const toggleCat = (cat: string) => setForm(f => ({ ...f, category: f.category.includes(cat) ? f.category.filter(x => x !== cat) : [...f.category, cat] }));
   const toggleTag = (tag: string) => setForm(f => ({ ...f, tags: f.tags.includes(tag) ? f.tags.filter(x => x !== tag) : [...f.tags, tag] }));
   const setRating = (key: string, val: number) => setForm(f => ({ ...f, ratings: { ...f.ratings, [key]: val } }));
-
+ 
   return (
     <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif" }}>
       <div style={{ position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(24px)", background: darkMode ? "rgba(12,11,9,0.92)" : "rgba(247,243,238,0.92)", borderBottom: "1px solid " + borderCol, padding: "16px 24px", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -346,7 +346,7 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
               <label style={lbl}>Opis</label>
               <textarea value={form.description} onChange={e => setField("description", e.target.value)} placeholder="Kratki opis lokala..." style={{ ...inp, minHeight: "80px", resize: "vertical" as const }}/>
             </div>
-            <AdminField label="Šta probati" field="must_try" value={form.must_try} onChange={setField} placeholder="npr. Cappuccino" darkMode={darkMode} borderCol={borderCol}/>
+            <AdminField label="Sta probati" field="must_try" value={form.must_try} onChange={setField} placeholder="npr. Cappuccino" darkMode={darkMode} borderCol={borderCol}/>
             <AdminField label="Najbolje vreme" field="best_time" value={form.best_time} onChange={setField} placeholder="npr. Jutro, 9-11h" darkMode={darkMode} borderCol={borderCol}/>
             <div style={{ padding: "16px", background: "rgba(212,168,83,0.06)", border: "1px solid rgba(212,168,83,0.15)", borderRadius: "14px", marginBottom: "14px" }}>
               <label style={{ ...lbl, color: "#d4a853" }}>Slike (URL)</label>
@@ -387,7 +387,7 @@ const AdminPanel = ({ cafes, onClose, onRefresh, darkMode }: { cafes: Cafe[]; on
     </div>
   );
 };
-
+ 
 // ── COMMENTS ─────────────────────────────────────────────────────
 const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boolean }) => {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -396,17 +396,17 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-
+ 
   const cardBg = darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
   const borderCol = darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   const subtleText = darkMode ? "#6b6055" : "#9a8878";
   const inp: React.CSSProperties = { width: "100%", padding: "12px 14px", background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "12px", color: "inherit", fontSize: "14px", outline: "none", fontFamily: "inherit", boxSizing: "border-box", transition: "border-color 0.2s" };
-
+ 
   useEffect(() => {
     setLoading(true);
     dbGet("comments", "cafe_id=eq." + cafeId + "&order=created_at.desc").then(data => { setComments(data || []); setLoading(false); });
   }, [cafeId]);
-
+ 
   const handleSubmit = async () => {
     setError("");
     if (!form.name.trim()) { setError("Unesite ime i prezime."); return; }
@@ -420,7 +420,7 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
     setForm({ name: "", email: "", text: "", score: 8 });
     setTimeout(() => setSubmitted(false), 3000);
   };
-
+ 
   return (
     <div>
       <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, marginBottom: "16px" }}>Komentari ({comments.length})</h3>
@@ -466,7 +466,7 @@ const CommentsSection = ({ cafeId, darkMode }: { cafeId: number; darkMode: boole
     </div>
   );
 };
-
+ 
 // ── MAIN APP ──────────────────────────────────────────────────────
 export default function App() {
   const [cafes, setCafes] = useState<Cafe[]>([]);
@@ -484,20 +484,20 @@ export default function App() {
   const [adminError, setAdminError] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [pageTransition, setPageTransition] = useState(false);
-
+ 
   const loadCafes = async () => {
     setLoading(true);
     const data = await dbGet("cafes", "order=score.desc");
     setCafes(data || []);
     setLoading(false);
   };
-
+ 
   useEffect(() => {
     loadCafes();
     const seen = sessionStorage.getItem("okc_welcome");
     if (!seen) { setTimeout(() => setShowWelcome(true), 800); }
   }, []);
-
+ 
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       e.preventDefault();
@@ -507,22 +507,22 @@ export default function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, [page]);
-
+ 
   const goToDetail = (cafe: Cafe) => {
     setPageTransition(true);
     setTimeout(() => { setSelectedCafe(cafe); setPage("detail"); setPageTransition(false); window.scrollTo(0, 0); }, 200);
   };
-
+ 
   const goHome = () => {
     setPageTransition(true);
     setTimeout(() => { setPage("home"); setSelectedCafe(null); setPageTransition(false); }, 200);
   };
-
+ 
   const handleWelcomeClose = () => {
     setShowWelcome(false);
     sessionStorage.setItem("okc_welcome", "1");
   };
-
+ 
   const filtered = cafes.filter(c => {
     const matchFilter = activeFilter === "Sve" || (c.category && c.category.includes(activeFilter));
     const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -532,19 +532,19 @@ export default function App() {
   });
   const sorted = [...filtered].sort((a, b) => b.score - a.score);
   const toggleSave = (id: number) => setSavedCafes(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-
+ 
   const bg = darkMode ? { background: "#0c0b09", color: "#f0ece4" } : { background: "#f7f3ee", color: "#1a1510" };
   const cardBg = darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)";
   const borderCol = darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   const subtleText = darkMode ? "#6b6055" : "#9a8878";
-
+ 
   const handleAdminLogin = () => {
     if (adminPass === ADMIN_PASSWORD) { setAdminMode(true); setAdminPrompt(false); setAdminPass(""); setAdminError(false); }
     else setAdminError(true);
   };
-
+ 
   if (adminMode) return <AdminPanel cafes={cafes} onClose={() => { setAdminMode(false); loadCafes(); }} onRefresh={loadCafes} darkMode={darkMode}/>;
-
+ 
   // ── DETAIL PAGE ──────────────────────────────────────────────
   if (page === "detail" && selectedCafe) {
     const c = selectedCafe;
@@ -615,7 +615,7 @@ export default function App() {
             <span style={{ color: "#d4a853", fontSize: "18px" }}>→</span>
           </a>
           <CommentsSection cafeId={c.id} darkMode={darkMode}/>
-          <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, margin: "24px 0 12px" }}>Slični lokali</h3>
+          <h3 style={{ fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", color: subtleText, margin: "24px 0 12px" }}>Slicni lokali</h3>
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }}>
             {cafes.filter(x => x.id !== c.id).slice(0,3).map((sim, i) => (
               <button key={sim.id} onClick={() => goToDetail(sim)} className="card-hover" style={{ flexShrink: 0, width: "140px", background: cardBg, border: "1px solid " + borderCol, borderRadius: "16px", overflow: "hidden", cursor: "pointer", textAlign: "left", color: "inherit", animation: "fadeInUp 0.4s " + (i * 0.1) + "s both" }}>
@@ -628,14 +628,14 @@ export default function App() {
       </div>
     );
   }
-
+ 
   // ── HOME PAGE ─────────────────────────────────────────────────
   return (
     <div style={{ ...bg, minHeight: "100vh", fontFamily: "'Georgia', serif", overflowX: "hidden", opacity: pageTransition ? 0 : 1, transition: "opacity 0.2s" }}>
       <style>{globalStyles}</style>
-
+ 
       {showWelcome && <WelcomeModal onClose={handleWelcomeClose} darkMode={darkMode}/>}
-
+ 
       {adminPrompt && (
         <div style={{ position: "fixed", inset: 0, backdropFilter: "blur(12px)", background: "rgba(0,0,0,0.75)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }} className="fade-in">
           <div className="scale-in" style={{ background: darkMode ? "#1a1510" : "#fff", border: "1px solid " + borderCol, borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "320px", boxShadow: "0 24px 60px rgba(0,0,0,0.4)" }}>
@@ -650,7 +650,7 @@ export default function App() {
           </div>
         </div>
       )}
-
+ 
       {/* Floating Navbar */}
       <nav style={{ position: "fixed", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 100, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", background: darkMode ? "rgba(12,11,9,0.82)" : "rgba(247,243,238,0.88)", border: "1px solid " + borderCol, borderRadius: "99px", padding: "10px 20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,168,83,0.06)", width: "calc(100% - 48px)", maxWidth: "560px", boxSizing: "border-box", animation: "fadeInUp 0.6s both" }}>
         <span style={{ fontSize: "18px", cursor: "pointer", userSelect: "none", transition: "transform 0.2s" }} onDoubleClick={() => setAdminPrompt(true)} onMouseEnter={e => (e.currentTarget.style.transform="scale(1.2) rotate(-10deg)")} onMouseLeave={e => (e.currentTarget.style.transform="")}>☕</span>
@@ -659,7 +659,7 @@ export default function App() {
         <button onClick={() => setDarkMode(!darkMode)} className="btn-hover" style={{ background: "none", border: "none", color: subtleText, cursor: "pointer", fontSize: "16px", transition: "transform 0.3s" }} onMouseEnter={e => (e.currentTarget.style.transform="rotate(20deg)")} onMouseLeave={e => (e.currentTarget.style.transform="")}>{darkMode ? "☀️" : "🌙"}</button>
         <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" className="btn-hover" style={{ background: "linear-gradient(135deg,#d4a853,#8a6a3a)", borderRadius: "99px", padding: "6px 14px", fontSize: "12px", color: "#fff", textDecoration: "none", fontWeight: "600" }}>IG</a>
       </nav>
-
+ 
       {/* Hero */}
       <div style={{ position: "relative", minHeight: "100svh", display: "flex", flexDirection: "column", justifyContent: "flex-end", paddingBottom: "60px", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: darkMode ? "radial-gradient(ellipse at 70% 20%, rgba(138,105,58,0.28) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(212,168,83,0.14) 0%, transparent 50%), #0c0b09" : "radial-gradient(ellipse at 70% 20%, rgba(212,168,83,0.32) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(138,105,58,0.18) 0%, transparent 50%), #f7f3ee" }}/>
@@ -668,7 +668,7 @@ export default function App() {
         <div style={{ position: "absolute", top: "15%", right: "10%", width: "220px", height: "220px", background: "radial-gradient(circle, rgba(212,168,83,0.18) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(35px)", animation: "floatUp 6s ease-in-out infinite" }}/>
         <div style={{ position: "absolute", bottom: "25%", left: "-5%", width: "270px", height: "270px", background: "radial-gradient(circle, rgba(138,105,58,0.12) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(45px)", animation: "floatUp 8s ease-in-out infinite 2s" }}/>
         <div style={{ position: "absolute", top: "50%", right: "30%", width: "120px", height: "120px", background: "radial-gradient(circle, rgba(212,168,83,0.08) 0%, transparent 70%)", borderRadius: "50%", filter: "blur(20px)", animation: "floatUp 5s ease-in-out infinite 1s" }}/>
-
+ 
         <div style={{ position: "relative", padding: "0 24px", paddingTop: "100px" }}>
           <div className="fade-in-up" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(212,168,83,0.12)", border: "1px solid rgba(212,168,83,0.32)", borderRadius: "99px", padding: "6px 14px", fontSize: "11px", color: "#d4a853", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "20px" }}>
             ✦ Čačak Coffee Guide
@@ -679,11 +679,11 @@ export default function App() {
             u Cacku!
           </h1>
           <p className="fade-in-up" style={{ color: subtleText, fontSize: "15px", lineHeight: 1.6, margin: "0 0 24px", maxWidth: "340px", animationDelay: "0.2s" }}>Autenticne recenzije kafića, brunch mesta i lokacija koje vredi posetiti u Čačku.</p>
-
+ 
           <div className="fade-in-up" style={{ animationDelay: "0.25s" }}>
             <HeroCarousel cafes={cafes} darkMode={darkMode}/>
           </div>
-
+ 
           <div className="fade-in-up" style={{ position: "relative", marginBottom: "20px", maxWidth: "480px", animationDelay: "0.3s" }}>
             <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", color: subtleText }}>🔍</span>
             <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Traži kafić..." style={{ width: "100%", padding: "16px 16px 16px 46px", background: darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.05)", border: "1px solid " + borderCol, borderRadius: "16px", color: "inherit", fontSize: "15px", outline: "none", backdropFilter: "blur(12px)", boxSizing: "border-box", fontFamily: "inherit", transition: "border-color 0.2s, box-shadow 0.2s" }}
@@ -691,12 +691,12 @@ export default function App() {
               onBlur={e => { e.target.style.borderColor=borderCol; e.target.style.boxShadow="none"; }}
             />
           </div>
-
+ 
           <div className="fade-in-up" style={{ display: "flex", gap: "12px", flexWrap: "wrap", animationDelay: "0.35s" }}>
             <button onClick={() => document.getElementById("lokali")?.scrollIntoView({ behavior: "smooth" })} className="btn-hover" style={{ background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", border: "none", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit" }}>Istražiti lokale</button>
             <button onClick={() => setShowMap(!showMap)} className="btn-hover" style={{ background: darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.05)", border: "1px solid " + (showMap?"#d4a853":borderCol), color: showMap?"#d4a853":"inherit", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", cursor: "pointer", fontFamily: "inherit", backdropFilter: "blur(8px)", transition: "all 0.2s" }}>Lokacije</button>
           </div>
-
+ 
           <div className="fade-in-up" style={{ display: "flex", gap: "28px", marginTop: "40px", animationDelay: "0.4s" }}>
             {[[String(cafes.length), "Lokala"], ["100+", "Recenzija"], ["7.7", "Rating"]].map(([n, l]) => (
               <div key={l} style={{ transition: "transform 0.2s" }} onMouseEnter={e => (e.currentTarget.style.transform="translateY(-2px)")} onMouseLeave={e => (e.currentTarget.style.transform="")}>
@@ -707,7 +707,7 @@ export default function App() {
           </div>
         </div>
       </div>
-
+ 
       {/* Location section */}
       {showMap && (
         <div style={{ padding: "0 24px 32px" }} className="fade-in-up">
@@ -718,7 +718,7 @@ export default function App() {
           <LocationList cafes={cafes} onSelect={c => { goToDetail(c); setShowMap(false); }} darkMode={darkMode}/>
         </div>
       )}
-
+ 
       {/* Sticky filters */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", background: darkMode?"rgba(12,11,9,0.88)":"rgba(247,243,238,0.92)", borderBottom: "1px solid " + borderCol, padding: "0 24px" }}>
         <div style={{ display: "flex", gap: "8px", overflowX: "auto", padding: "14px 0" }}>
@@ -727,7 +727,7 @@ export default function App() {
           ))}
         </div>
       </div>
-
+ 
       {/* Top banner */}
       {sorted.length > 0 && (
         <div className="fade-in-up" style={{ margin: "32px 24px 0", padding: "20px", background: "linear-gradient(135deg,rgba(212,168,83,0.13),rgba(138,105,58,0.07))", border: "1px solid rgba(212,168,83,0.22)", borderRadius: "20px" }}>
@@ -736,7 +736,7 @@ export default function App() {
           <button onClick={() => goToDetail(sorted[0])} className="btn-hover" style={{ background: "rgba(212,168,83,0.15)", border: "1px solid rgba(212,168,83,0.32)", color: "#d4a853", borderRadius: "99px", padding: "7px 16px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>Pogledaj recenziju</button>
         </div>
       )}
-
+ 
       {/* Cafes list */}
       <div id="lokali" style={{ padding: "32px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "20px" }}>
@@ -784,7 +784,7 @@ export default function App() {
           </div>
         )}
       </div>
-
+ 
       {/* Hidden gems */}
       {cafes.filter(c => c.score >= 8).length > 0 && (
         <div className="fade-in-up" style={{ margin: "0 24px 32px", padding: "24px", background: darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)", border: "1px solid " + borderCol, borderRadius: "24px" }}>
@@ -804,7 +804,7 @@ export default function App() {
           </div>
         </div>
       )}
-
+ 
       {/* Instagram CTA */}
       <div className="fade-in-up" style={{ margin: "0 24px 32px", padding: "28px 24px", background: "linear-gradient(135deg,rgba(212,168,83,0.15),rgba(138,105,58,0.08))", border: "1px solid rgba(212,168,83,0.26)", borderRadius: "24px", textAlign: "center" }}>
         <p style={{ margin: "0 0 8px", fontSize: "32px", animation: "floatUp 3s ease-in-out infinite" }}>📸</p>
@@ -812,7 +812,7 @@ export default function App() {
         <p style={{ margin: "0 0 20px", color: subtleText, fontSize: "14px" }}>Svakodnevne recenzije i priče iz kafića Čačka.</p>
         <a href="https://instagram.com/ocenjivanje.kafica.cacak" target="_blank" rel="noreferrer" className="btn-hover" style={{ display: "inline-block", background: "linear-gradient(135deg,#d4a853,#b8893a)", color: "#0c0b09", borderRadius: "14px", padding: "13px 28px", fontSize: "14px", fontWeight: "700", textDecoration: "none" }}>@ocenjivanje.kafica.cacak</a>
       </div>
-
+ 
       <footer style={{ padding: "24px", borderTop: "1px solid " + borderCol, textAlign: "center" }}>
         <p style={{ margin: "0 0 4px", fontSize: "18px" }}>☕</p>
         <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: "600" }}>Ocenjivanje Kafića Čačak</p>
